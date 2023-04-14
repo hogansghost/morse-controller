@@ -1,21 +1,27 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
+import { getMorseCharacterFragments } from "./utils/getMorseCharacterFragments";
+import { GamepadCustom } from "./utils/vibrateController";
+import {
+  morseDash,
+  morseDot,
+  vibrateControllerConnected,
+} from "./utils/vibrationFunctions";
 
 function App() {
-  const [morseText, setMorseText] = useState("");
-  const [count, setCount] = useState("I love Olga");
-  const [loading, setLoading] = useState(false);
-
   const haveEvents = "GamepadEvent" in window;
+
+  const [morseText, setMorseText] = useState("");
+  const [message, setMessage] = useState("I love Olga");
+  const [running, setRunning] = useState(false);
+  const [isControllerConnected, setIsControllerConnected] = useState("");
   const [controllers, setControllers] = useState([]);
 
-  const connectHandler = () => {
-    console.warn("connected");
-
+  const assignConnectedControllers = () => {
     const gamepads = navigator?.getGamepads() ?? [];
     // @ts-ignore jog on
     const newGP = gamepads
-    // @ts-ignore jog on
+      // @ts-ignore jog on
       .reduce((prev, curr) => {
         return [...prev, curr];
       }, [])
@@ -24,8 +30,14 @@ function App() {
 
     setControllers(newGP);
 
-    // @ts-ignore pls
-    // vibrate({ type: "dash", intensity: "strong" });
+    newGP.map(async (controller: GamepadCustom) => {
+      vibrateControllerConnected({ controller });
+    });
+  }
+
+  const connectHandler = () => {
+    console.warn("connected");
+    assignConnectedControllers();
   };
 
   const disconnectHandler = () => {
@@ -49,421 +61,85 @@ function App() {
       // @ts-ignore jog on
       setControllers(newGP);
     }
-
-    // for (var i = 0; i < gamepads.length; i++) {
-    //   // @ts-ignore pls
-    //   if (gamepads[i] && gamepads[i].index in controllers) {
-    //     // @ts-ignore pls
-    //     setControllers(controllers[gamepads[i].index] = gamepads[i];
-    //   }
-    // }
   };
 
   const pause = async (durationMS: number) =>
     new Promise((resolve, _reject) => setTimeout(resolve, durationMS));
 
-  const vibrate = useCallback(
-    async (
-      {
-        type,
-        intensity,
-      }: {
-        type?: "dot" | "dash" | "space";
-        intensity: "none" | "weak" | "strong";
-      } = { type: "space", intensity: "weak" }
-    ) => {
-      const duration = type === "space" ? "1000" : type === "dot" ? 150 : 500;
-      const weakMagnitude =
-        intensity === "none" ? 0 : intensity === "weak" ? 0.75 : 0.9;
-      const strongMagnitude =
-        intensity === "none" ? 0 : intensity === "weak" ? 0.25 : 0.3;
+    const spaceMorseEvent = () => pause(400);
+    const spaceLetters = async () => {
+      setMorseText((currentMorseText) => `${currentMorseText} `);
+      await pause(950);
+    };
+    const spaceWord = async () => {
+      await pause(950);
+      console.log(' / ')
+      setMorseText((currentMorseText) => `${currentMorseText} / `);
+      await pause(950);
+    };
 
-      setMorseText(
-        (currentMorseText) =>
-          `${currentMorseText}${
-            type === "space" ? "  " : type === "dot" ? "." : "-"
-          }`
-      );
+  const morseCharacter = async ({
+    controller,
+    character,
+  }: {
+    controller: GamepadCustom;
+    character: string;
+  }) => {
+    console.log(character)
+    const morseFragments = getMorseCharacterFragments({ character });
 
-      await Promise.all(
-        controllers.map(async (controller) => {
-          // @ts-ignore pls
-          await controller?.vibrationActuator?.playEffect(controller.vibrationActuator.type, {
-            startDelay: 0,
-            duration,
-            weakMagnitude,
-            strongMagnitude,
-          });
-        })
-      );
-    },
-    [controllers]
-  );
+    for (const [index, fragment] of morseFragments.entries()) {
+      if (index !== 0) {
+        await spaceMorseEvent();
+      }
 
-  const spaceWord = async () => {
-    await pause(950);
-    setMorseText((currentMorseText) => `${currentMorseText} / `);
-    await pause(950);
-  };
-  const spaceLetters = async () => {
-    setMorseText((currentMorseText) => `${currentMorseText} `);
-    await pause(950);
-  };
-  const spaceMorseEvent = () => pause(400);
+      setMorseText((currentMorseText) => `${currentMorseText}${fragment}`);
 
-  const morseCharacter = async ({ value }) => {
-    switch (value.toLocaleLowerCase()) {
-      case "a":
-        console.log("a");
-        await vibrate({ type: "dot", intensity: "weak" });
-        await spaceMorseEvent();
-        await vibrate({ type: "dash", intensity: "strong" });
-        return;
-
-      case "b":
-        console.log("b");
-        await vibrate({ type: "dash", intensity: "strong" });
-        await spaceMorseEvent();
-        await vibrate({ type: "dot", intensity: "weak" });
-        await spaceMorseEvent();
-        await vibrate({ type: "dot", intensity: "weak" });
-        await spaceMorseEvent();
-        await vibrate({ type: "dot", intensity: "weak" });
-        return;
-
-      case "c":
-        console.log("c");
-        await vibrate({ type: "dash", intensity: "strong" });
-        await spaceMorseEvent();
-        await vibrate({ type: "dot", intensity: "weak" });
-        await spaceMorseEvent();
-        await vibrate({ type: "dash", intensity: "strong" });
-        await spaceMorseEvent();
-        await vibrate({ type: "dot", intensity: "weak" });
-        return;
-
-      case "d":
-        console.log("d");
-        await vibrate({ type: "dash", intensity: "strong" });
-        await spaceMorseEvent();
-        await vibrate({ type: "dot", intensity: "weak" });
-        await spaceMorseEvent();
-        await vibrate({ type: "dot", intensity: "weak" });
-        return;
-
-      case "e":
-        console.log("e");
-        await vibrate({ type: "dot", intensity: "weak" });
-        await spaceMorseEvent();
-        return;
-
-      case "f":
-        console.log("f");
-        await vibrate({ type: "dot", intensity: "weak" });
-        await spaceMorseEvent();
-        await vibrate({ type: "dot", intensity: "weak" });
-        await spaceMorseEvent();
-        await vibrate({ type: "dash", intensity: "strong" });
-        await spaceMorseEvent();
-        await vibrate({ type: "dot", intensity: "weak" });
-        return;
-
-      case "g":
-        console.log("g");
-        await vibrate({ type: "dash", intensity: "strong" });
-        await spaceMorseEvent();
-        await vibrate({ type: "dash", intensity: "strong" });
-        await spaceMorseEvent();
-        await vibrate({ type: "dot", intensity: "weak" });
-        await spaceMorseEvent();
-        return;
-
-      case "h":
-        console.log("h");
-        await vibrate({ type: "dot", intensity: "weak" });
-        await spaceMorseEvent();
-        await vibrate({ type: "dot", intensity: "weak" });
-        await spaceMorseEvent();
-        await vibrate({ type: "dot", intensity: "weak" });
-        await spaceMorseEvent();
-        await vibrate({ type: "dot", intensity: "weak" });
-        await spaceMorseEvent();
-        return;
-
-      case "i":
-        console.log("i");
-        await vibrate({ type: "dot", intensity: "weak" });
-        await spaceMorseEvent();
-        await vibrate({ type: "dot", intensity: "weak" });
-        await spaceMorseEvent();
-        return;
-        return;
-
-      case "j":
-        console.log("j");
-        await vibrate({ type: "dot", intensity: "weak" });
-        await spaceMorseEvent();
-        await vibrate({ type: "dash", intensity: "strong" });
-        await spaceMorseEvent();
-        await vibrate({ type: "dash", intensity: "strong" });
-        await spaceMorseEvent();
-        return;
-
-      case "k":
-        console.log("k");
-        await vibrate({ type: "dash", intensity: "strong" });
-        await spaceMorseEvent();
-        await vibrate({ type: "dot", intensity: "weak" });
-        await spaceMorseEvent();
-        await vibrate({ type: "dash", intensity: "strong" });
-        await spaceMorseEvent();
-        return;
-
-      case "l":
-        console.log("l");
-        await vibrate({ type: "dot", intensity: "weak" });
-        await spaceMorseEvent();
-        await vibrate({ type: "dash", intensity: "strong" });
-        await spaceMorseEvent();
-        await vibrate({ type: "dot", intensity: "weak" });
-        await spaceMorseEvent();
-        await vibrate({ type: "dot", intensity: "weak" });
-        await spaceMorseEvent();
-        return;
-
-      case "m":
-        console.log("m");
-        await vibrate({ type: "dash", intensity: "strong" });
-        await spaceMorseEvent();
-        await vibrate({ type: "dash", intensity: "strong" });
-        await spaceMorseEvent();
-        return;
-
-      case "n":
-        console.log("n");
-        await vibrate({ type: "dash", intensity: "strong" });
-        await spaceMorseEvent();
-        await vibrate({ type: "dot", intensity: "weak" });
-        await spaceMorseEvent();
-        return;
-
-      case "o":
-        console.log("o");
-        await vibrate({ type: "dash", intensity: "strong" });
-        await spaceMorseEvent();
-        await vibrate({ type: "dash", intensity: "strong" });
-        await spaceMorseEvent();
-        await vibrate({ type: "dash", intensity: "strong" });
-        await spaceMorseEvent();
-        return;
-
-      case "p":
-        console.log("p");
-        await vibrate({ type: "dot", intensity: "weak" });
-        await spaceMorseEvent();
-        await vibrate({ type: "dash", intensity: "strong" });
-        await spaceMorseEvent();
-        await vibrate({ type: "dash", intensity: "strong" });
-        await spaceMorseEvent();
-        await vibrate({ type: "dot", intensity: "weak" });
-        await spaceMorseEvent();
-        return;
-
-      case "q":
-        console.log("q");
-        await vibrate({ type: "dash", intensity: "strong" });
-        await spaceMorseEvent();
-        await vibrate({ type: "dash", intensity: "strong" });
-        await spaceMorseEvent();
-        await vibrate({ type: "dot", intensity: "weak" });
-        await spaceMorseEvent();
-        await vibrate({ type: "dash", intensity: "strong" });
-        await spaceMorseEvent();
-        return;
-
-      case "r":
-        console.log("r");
-        await vibrate({ type: "dot", intensity: "weak" });
-        await spaceMorseEvent();
-        await vibrate({ type: "dash", intensity: "strong" });
-        await spaceMorseEvent();
-        await vibrate({ type: "dot", intensity: "weak" });
-        return;
-
-      case "s":
-        console.log("s");
-        await vibrate({ type: "dot", intensity: "weak" });
-        await spaceMorseEvent();
-        await vibrate({ type: "dot", intensity: "weak" });
-        await spaceMorseEvent();
-        await vibrate({ type: "dot", intensity: "weak" });
-        await spaceMorseEvent();
-        return;
-
-      case "t":
-        console.log("t");
-        await vibrate({ type: "dash", intensity: "strong" });
-        await spaceMorseEvent();
-        return;
-
-      case "u":
-        console.log("u");
-        await vibrate({ type: "dot", intensity: "weak" });
-        await spaceMorseEvent();
-        await vibrate({ type: "dot", intensity: "weak" });
-        await spaceMorseEvent();
-        await vibrate({ type: "dash", intensity: "strong" });
-        await spaceMorseEvent();
-        return;
-
-      case "v":
-        console.log("v");
-        await vibrate({ type: "dot", intensity: "weak" });
-        await spaceMorseEvent();
-        await vibrate({ type: "dot", intensity: "weak" });
-        await spaceMorseEvent();
-        await vibrate({ type: "dot", intensity: "weak" });
-        await spaceMorseEvent();
-        await vibrate({ type: "dash", intensity: "strong" });
-        await spaceMorseEvent();
-        return;
-
-      case "w":
-        console.log("w");
-        await vibrate({ type: "dot", intensity: "weak" });
-        await spaceMorseEvent();
-        await vibrate({ type: "dash", intensity: "strong" });
-        await spaceMorseEvent();
-        await vibrate({ type: "dash", intensity: "strong" });
-        await spaceMorseEvent();
-        return;
-
-      case "x":
-        console.log("x");
-        await vibrate({ type: "dash", intensity: "strong" });
-        await spaceMorseEvent();
-        await vibrate({ type: "dot", intensity: "weak" });
-        await spaceMorseEvent();
-        await vibrate({ type: "dot", intensity: "weak" });
-        await spaceMorseEvent();
-        await vibrate({ type: "dash", intensity: "strong" });
-        await spaceMorseEvent();
-        return;
-
-      case "y":
-        console.log("y");
-
-        await vibrate({ type: "dash", intensity: "strong" });
-        await spaceMorseEvent();
-        await vibrate({ type: "dot", intensity: "weak" });
-        await spaceMorseEvent();
-        await vibrate({ type: "dash", intensity: "strong" });
-        await spaceMorseEvent();
-        await vibrate({ type: "dash", intensity: "strong" });
-        await spaceMorseEvent();
-        return;
-
-      case "z":
-        console.log("z");
-        await vibrate({ type: "dash", intensity: "strong" });
-        await spaceMorseEvent();
-        await vibrate({ type: "dash", intensity: "strong" });
-        await spaceMorseEvent();
-        await vibrate({ type: "dot", intensity: "weak" });
-        await spaceMorseEvent();
-        await vibrate({ type: "dot", intensity: "weak" });
-        await spaceMorseEvent();
-        return;
-
-      case "0":
-        console.log("0");
-        await vibrate({ type: "dash", intensity: "strong" });
-        await spaceMorseEvent();
-        await vibrate({ type: "dash", intensity: "strong" });
-        await spaceMorseEvent();
-        await vibrate({ type: "dash", intensity: "strong" });
-        await spaceMorseEvent();
-        await vibrate({ type: "dash", intensity: "strong" });
-        await spaceMorseEvent();
-        await vibrate({ type: "dash", intensity: "strong" });
-        await spaceMorseEvent();
-        return;
-
-      case "1":
-        console.log("1");
-        await vibrate({ type: "dot", intensity: "weak" });
-        await spaceMorseEvent();
-        await vibrate({ type: "dash", intensity: "strong" });
-        await spaceMorseEvent();
-        await vibrate({ type: "dash", intensity: "strong" });
-        await spaceMorseEvent();
-        await vibrate({ type: "dash", intensity: "strong" });
-        await spaceMorseEvent();
-        await vibrate({ type: "dash", intensity: "strong" });
-        await spaceMorseEvent();
-        return;
-
-      case "2":
-        console.log("2");
-        await vibrate({ type: "dot", intensity: "weak" });
-        await spaceMorseEvent();
-        await vibrate({ type: "dot", intensity: "weak" });
-        await spaceMorseEvent();
-        await vibrate({ type: "dash", intensity: "strong" });
-        await spaceMorseEvent();
-        await vibrate({ type: "dash", intensity: "strong" });
-        await spaceMorseEvent();
-        await vibrate({ type: "dash", intensity: "strong" });
-        await spaceMorseEvent();
-        return;
-    }
-  };
-
-  const repeatMessage = async (arr) => {
-    // @ts-ignore pls
-    for (const [index, character] of arr.entries()) {
-      if (character.type === "character") {
-        if (index !== 0) {
-          // Space each letter out comfortably.
-          await spaceLetters();
-        }
-
-        await morseCharacter(character);
-
+      if (fragment === "-") {
+        await morseDash({ controller });
         continue;
       }
 
-      await spaceWord();
-      console.log(" ");
+      await morseDot({ controller });
     }
-
-    setLoading(false);
   };
 
-  const playBack = async (evt) => {
-    evt.preventDefault();
 
-    const morseMap = count.split("");
-    // @ts-ignore pls
-    const thing = morseMap.reduce((curr, next) => {
-      return [
-        ...curr,
-        {
-          type: next === " " ? "space" : "character",
-          value: next,
-          duration: 100,
-        },
-      ];
-    }, []);
+  const playBackMorseMessage = async () => {
+    const morseMap = message.split("");
 
-    setLoading(true);
+    setRunning(true);
     setMorseText("");
 
-    repeatMessage(thing);
+    for (const character of morseMap) {
+      await Promise.all(
+        controllers.map(async (controller: GamepadCustom) => {
+          if (character === " ") {
+            await spaceWord();
+            return;
+          }
+
+          await morseCharacter({
+            controller,
+            character,
+          });
+
+          await spaceLetters();
+        })
+      );
+    }
+
+    setRunning(false);
   };
 
-  const handleOnChange = (e) => {
-    setCount(e.target.value);
+  const startRound = (evt: React.FormEvent<HTMLFormElement>) => {
+    evt.preventDefault();
+
+    playBackMorseMessage();
+  }
+
+  const handleOnChange = (evt: React.ChangeEvent<HTMLInputElement>) => {
+    setMessage(evt.target.value);
   };
 
   useEffect(() => {
@@ -483,10 +159,10 @@ function App() {
   }, []);
 
   useEffect(() => {
-      window.addEventListener("gamepadconnected", connectHandler);
+    window.addEventListener("gamepadconnected", connectHandler);
 
     return () => {
-      console.warn("end");
+      window.removeEventListener("gamepadconnected", connectHandler);
     };
   }, []);
 
@@ -494,10 +170,10 @@ function App() {
     <div className="App">
       <p>{morseText}</p>
 
-      <form onSubmit={playBack}>
-        <input type="password" value={count} onChange={handleOnChange} />
+      <form onSubmit={startRound}>
+        <input type="password" value={message} onChange={handleOnChange} />
 
-        <button type="submit" disabled={loading}>
+        <button type="submit" disabled={running}>
           Play
         </button>
       </form>
