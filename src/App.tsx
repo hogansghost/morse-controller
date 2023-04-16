@@ -1,5 +1,9 @@
 import { ChangeEvent, FormEvent, useEffect, useRef, useState } from "react";
-import "./App.css";
+import { ControllerList } from "./components/ControllerList/ControllerList";
+import { GameGuessOverlay } from "./components/GameGuessOverlay/GameGuessOverlay";
+import { WordInputForm } from "./components/WordInputForm/WordInputForm";
+import * as Styled from "./styles";
+import { spaceLetters, spaceMorseFragment, spaceWord } from "./utils/delays";
 import { getMorseCharacterFragments } from "./utils/getMorseCharacterFragments";
 import { GamepadCustom, vibrateController } from "./utils/vibrateController";
 import {
@@ -9,52 +13,65 @@ import {
 } from "./utils/vibrationFunctions";
 
 function App() {
-  const haveEvents = "GamepadEvent" in window;
-  const requestAnimationFrame = window.requestAnimationFrame;
+  const _animationFrame = useRef<number | null>(0);
+  const _interaction = useRef(false);
+  const _running = useRef(false);
+  const _message = useRef("");
 
-  const requestRef = useRef<number | null>(0);
-  const interaction = useRef(false);
-  const running = useRef(false);
-  const _message = useRef("aa bb");
-
-  // const [interaction, setInteraction] = useState(false);
-  const [currentGuesser, setCurrentGuesser] = useState<GamepadCustom | null>(null);
-  const [paused, setPaused] = useState(false);
+  const [guessingController, setGuessingController] =
+    useState<GamepadCustom | null>(null);
+  const [isPaused, setIsPaused] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
-  const [morseText, setMorseText] = useState("");
-  const [message, setMessage] = useState("aa bb");
-  // const [running, setRunning] = useState(false);
-  const [isControllerConnected, setIsControllerConnected] = useState(false);
+  const [messageInMorse, setMessageInMorse] = useState("");
+  const [message, setMessage] = useState("");
   const [controllers, setControllers] = useState<GamepadCustom[]>([]);
 
-  const resetGameLoop = () => {
-    if (!!requestRef.current) {
-      cancelAnimationFrame(requestRef.current);
-    }
+  const assignConnectedControllers = () => {
+    const detectedGamepads = (navigator?.getGamepads().filter(Boolean) ??
+      []) as NonNullable<GamepadCustom>[];
+    const detectedGamepadCount = !!detectedGamepads.length;
 
-    requestRef.current = null;
+    setControllers(detectedGamepads);
+
+    if (detectedGamepadCount) {
+      detectedGamepads.map(async (controller: GamepadCustom) => {
+        vibrateControllerConnected({ controller });
+      });
+    }
   };
 
-  const controllerLogic = async ({
+  const connectControllerHandler = () => {
+    assignConnectedControllers();
+  };
+
+  const disconnectControllerHandler = () => {
+    assignConnectedControllers();
+  };
+
+  const gameResetLoop = () => {
+    if (!!_animationFrame.current) {
+      cancelAnimationFrame(_animationFrame.current);
+    }
+
+    _animationFrame.current = null;
+  };
+
+  const controllerInteraction = async ({
     controller,
   }: {
     controller: GamepadCustom;
   }) => {
     const buttons = controller?.buttons?.some((button) => button.pressed);
 
-    if (!!buttons && running.current) {
-      interaction.current = true;
+    if (!!buttons && _running.current) {
+      _interaction.current = true;
+      _running.current = false;
+
       setIsRunning(false);
-      setPaused(true);
-      // }
+      setIsPaused(true);
+      setGuessingController(controller);
 
-      // if (!!buttons) {
-      running.current = false;
-      // setIsRunning(false);
-
-      resetGameLoop();
-
-      setCurrentGuesser(controller);
+      gameResetLoop();
 
       vibrateController({
         controller,
@@ -65,44 +82,12 @@ function App() {
     }
   };
 
-  const listen = async () => {
-    await controllerLoop(controllerLogic);
-    requestRef.current = requestAnimationFrame(listen);
-  };
+  const gameRequestAnimationLoop = async () => {
+    await controllerLoop(controllerInteraction);
 
-  const assignConnectedControllers = () => {
-    const detectedGamepads = (navigator?.getGamepads().filter(Boolean) ??
-      []) as NonNullable<GamepadCustom>[];
-    const detectedGamepadCount = !!detectedGamepads.length;
-
-    setControllers(detectedGamepads);
-    setIsControllerConnected(detectedGamepadCount);
-
-    if (detectedGamepadCount) {
-      detectedGamepads.map(async (controller: GamepadCustom) => {
-        vibrateControllerConnected({ controller });
-      });
-    }
-  };
-
-  const connectHandler = () => {
-    assignConnectedControllers();
-  };
-
-  const disconnectHandler = () => {
-    assignConnectedControllers();
-  };
-
-  const pause = async (durationMS: number) =>
-    new Promise((resolve, _reject) => setTimeout(resolve, durationMS));
-
-  const spaceMorseEvent = () => pause(400);
-  const spaceLetters = async () => {
-    await pause(950);
-  };
-  const spaceWord = async () => {
-    await spaceLetters();
-    await spaceLetters();
+    _animationFrame.current = window.requestAnimationFrame(
+      gameRequestAnimationLoop
+    );
   };
 
   const controllerLoop = async (controllerCallback: any) => {
@@ -111,7 +96,6 @@ function App() {
 
     await Promise.all(
       detectedGamepads.map(async (controller: GamepadCustom) => {
-        // await controllerCallback({ controller });
         await controllerCallback({ controller });
       })
     );
@@ -124,15 +108,15 @@ function App() {
     fragment: string;
     controllerEvent: any;
   }) => {
-    if (!running.current && !!interaction.current) {
+    if (!_running.current && !!_interaction.current) {
       return;
     }
 
-    setMorseText((currentMorseText) => `${currentMorseText}${fragment}`);
+    setMessageInMorse((currentMorseText) => `${currentMorseText}${fragment}`);
 
     await controllerLoop(controllerEvent);
 
-    await spaceMorseEvent();
+    await spaceMorseFragment();
   };
 
   const playBackMorseMessage = async () => {
@@ -141,23 +125,23 @@ function App() {
     for (const character of morseMap) {
       const morseFragments = getMorseCharacterFragments({ character });
 
-      if (!running.current && !!interaction.current) {
-        resetGameLoop();
+      if (!_running.current && !!_interaction.current) {
+        gameResetLoop();
 
-        running.current = false;
+        _running.current = false;
         setIsRunning(false);
 
         break;
       }
 
       if (character === " ") {
-        setMorseText((currentMorseText) => `${currentMorseText}/ `);
+        setMessageInMorse((currentMorseText) => `${currentMorseText}/ `);
         await spaceWord();
         continue;
       }
 
-      for (const [index, fragment] of morseFragments.entries()) {
-        if (running.current && interaction.current) {
+      for (const fragment of morseFragments) {
+        if (_running.current && _interaction.current) {
           break;
         }
 
@@ -170,99 +154,125 @@ function App() {
         }
       }
 
-      setMorseText((currentMorseText) => `${currentMorseText} `);
+      setMessageInMorse((currentMorseText) => `${currentMorseText} `);
+
       await spaceLetters();
     }
-
-    // setRunning(false);
-    // running.current = false;
-    // setIsRunning(false);
   };
 
-  const startRound = (evt: FormEvent<HTMLFormElement>) => {
-    if (!requestRef.current) {
-      requestRef.current = requestAnimationFrame(listen);
+  const resetGameRound = () => {
+    if (!_animationFrame.current) {
+      _animationFrame.current = window.requestAnimationFrame(
+        gameRequestAnimationLoop
+      );
     }
 
-    evt.preventDefault();
+    _interaction.current = false;
+    _running.current = true;
 
-    // setRunning(true);
-    interaction.current = false;
-    running.current = true;
     setIsRunning(true);
-    setPaused(false);
-    setMorseText("");
+    setIsPaused(false);
+    setMessageInMorse("");
+  };
+
+  const startGameRound = () => {
+    resetGameRound();
 
     playBackMorseMessage();
   };
 
-  const highlightGuessingPlayer = () => {
-    if (!currentGuesser) {
-      console.error('No current guesser found');
+  const handleRestartRound = () => {
+    startGameRound();
+  };
+
+  const handleNextRound = () => {
+    setIsPaused(false);
+    setMessageInMorse("");
+    setMessage("");
+    _message.current = "";
+  };
+
+  const handleStartRound = (evt: FormEvent<HTMLFormElement>) => {
+    evt.preventDefault();
+
+    if (!message.length) {
+      return;
+    }
+
+    startGameRound();
+  };
+
+  const handleHighlightGuessingPlayer = () => {
+    if (!guessingController) {
+      console.error("No current guesser found");
       return;
     }
 
     vibrateController({
-      controller: currentGuesser,
+      controller: guessingController,
       duration: 1200,
       weakMagnitude: 1,
       strongMagnitude: 1,
     });
-  }
+  };
 
-  const handleOnChange = (evt: ChangeEvent<HTMLInputElement>) => {
-    setMessage(evt.target.value);
+  const handleOnChange = (evt: ChangeEvent<HTMLTextAreaElement>) => {
     _message.current = evt.target.value;
+    setMessage(evt.target.value);
   };
 
   useEffect(() => {
-    window.addEventListener("gamepadconnected", connectHandler);
+    window.addEventListener("gamepadconnected", connectControllerHandler);
 
     return () => {
-      window.removeEventListener("gamepadconnected", connectHandler);
+      window.removeEventListener(
+        "gamepadconnected",
+        disconnectControllerHandler
+      );
     };
   }, []);
 
   useEffect(() => {
-    requestRef.current = requestAnimationFrame(listen);
-    console.log("start");
+    _animationFrame.current = window.requestAnimationFrame(
+      gameRequestAnimationLoop
+    );
+
     return () => {
-      console.log("end");
-      resetGameLoop();
+      gameResetLoop();
     };
   }, [controllers, message]);
 
   return (
-    <div className="App">
-      {isControllerConnected ? (
-        <h1>{controllers.length} Controller connected</h1>
-      ) : (
-        <h1>Connect a controller</h1>
+    <Styled.App>
+      <Styled.AppController>
+        <ControllerList controllers={controllers} />
+      </Styled.AppController>
+
+      <Styled.AppRoundControls>
+        {!controllers.length && <p>Please connect at least 1 controller</p>}
+
+        <p>{messageInMorse}</p>
+      </Styled.AppRoundControls>
+
+      <Styled.AppInput>
+        <WordInputForm
+          message={message}
+          disabled={isRunning || !controllers.length}
+          onChange={handleOnChange}
+          onSubmit={handleStartRound}
+        />
+      </Styled.AppInput>
+
+      {/* Overlay */}
+      {isPaused && (
+        <GameGuessOverlay
+          disabled={isRunning}
+          onNextRound={handleNextRound}
+          onRestartRoundClick={handleRestartRound}
+          onHighlightPlayerClick={handleHighlightGuessingPlayer}
+        />
       )}
-      {paused && (
-        <>
-          <h1>Someone has the answer</h1>
-
-          <button type="button" onClick={startRound} disabled={isRunning}>
-            Restart round
-          </button>
-
-          <button type="button" onClick={highlightGuessingPlayer} disabled={isRunning}>
-            Highlight guessing player
-          </button>
-        </>
-      )}
-
-      <p>{morseText}</p>
-
-      <form onSubmit={startRound}>
-        <input type="password" value={message} onChange={handleOnChange} />
-
-        <button type="submit" disabled={isRunning}>
-          Play
-        </button>
-      </form>
-    </div>
+    </Styled.App>
   );
 }
 
