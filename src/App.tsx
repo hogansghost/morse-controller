@@ -1,6 +1,7 @@
 import { ChangeEvent, FormEvent, useEffect, useRef, useState } from "react";
 import useSound from "use-sound";
 import SuccessSoundFX from "./assets/sounds/success.mp3";
+import { ControllerDisconnectedOverlay } from "./components/ControllerDisconnectedOverlay/ControllerDisconnectedOverlay";
 import { ControllerList } from "./components/ControllerList/ControllerList";
 import { GameGuessOverlay } from "./components/GameGuessOverlay/GameGuessOverlay";
 import { WordInputForm } from "./components/WordInputForm/WordInputForm";
@@ -69,6 +70,8 @@ function App() {
     if (!!buttons && _running.current) {
       _interaction.current = true;
       _running.current = false;
+
+      playSuccessSound();
 
       setIsRunning(false);
       setIsPaused(true);
@@ -225,8 +228,6 @@ function App() {
   };
 
   useEffect(() => {
-    playSuccessSound();
-
     window.addEventListener("gamepadconnected", connectControllerHandler);
 
     return () => {
@@ -247,6 +248,12 @@ function App() {
     };
   }, [controllers, message]);
 
+  useEffect(() => {
+    if (controllers.length) {
+      playSuccessSound();
+    }
+  }, [controllers]);
+
   return (
     <Styled.App>
       <Styled.AppController>
@@ -254,11 +261,9 @@ function App() {
       </Styled.AppController>
 
       <Styled.AppRoundControls>
-        {!controllers.length && <p>Please connect at least 1 controller</p>}
+        {!controllers.length && <ControllerDisconnectedOverlay />}
 
         <p>{messageInMorse}</p>
-
-        <button onClick={playSuccessSound}>Music</button>
       </Styled.AppRoundControls>
 
       <Styled.AppInput>
