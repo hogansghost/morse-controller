@@ -49,6 +49,7 @@ function App() {
   };
 
   const disconnectControllerHandler = () => {
+    console.log("disconnected");
     assignConnectedControllers();
   };
 
@@ -229,10 +230,12 @@ function App() {
 
   useEffect(() => {
     window.addEventListener("gamepadconnected", connectControllerHandler);
+    window.addEventListener("gamepaddisconnected", disconnectControllerHandler);
 
     return () => {
+      window.removeEventListener("gamepadconnected", connectControllerHandler);
       window.removeEventListener(
-        "gamepadconnected",
+        "gamepaddisconnected",
         disconnectControllerHandler
       );
     };
@@ -253,7 +256,7 @@ function App() {
       playSuccessSound();
     }
   }, [controllers]);
-
+  console.log(controllers);
   return (
     <Styled.App>
       <Styled.AppController>
