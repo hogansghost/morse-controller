@@ -1,10 +1,15 @@
 import styled from "styled-components";
+import WallpaperForza from "./assets/wallpapers/forza.jpg";
+import WallpaperHalo from "./assets/wallpapers/halo.jpg.webp";
 
 export const App = styled.div`
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   grid-template-rows: min-content minmax(0, 1fr) min-content;
   min-height: 100vh;
+  background-image: url(${Math.random() < 0.5
+    ? WallpaperHalo
+    : WallpaperForza});
 `;
 
 export const AppController = styled.div`

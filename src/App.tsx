@@ -1,4 +1,6 @@
 import { ChangeEvent, FormEvent, useEffect, useRef, useState } from "react";
+import useSound from "use-sound";
+import SuccessSoundFX from "./assets/sounds/success.mp3";
 import { ControllerList } from "./components/ControllerList/ControllerList";
 import { GameGuessOverlay } from "./components/GameGuessOverlay/GameGuessOverlay";
 import { WordInputForm } from "./components/WordInputForm/WordInputForm";
@@ -13,6 +15,7 @@ import {
 } from "./utils/vibrationFunctions";
 
 function App() {
+  const [playSuccessSound] = useSound(SuccessSoundFX);
   const _animationFrame = useRef<number | null>(0);
   const _interaction = useRef(false);
   const _running = useRef(false);
@@ -222,6 +225,8 @@ function App() {
   };
 
   useEffect(() => {
+    playSuccessSound();
+
     window.addEventListener("gamepadconnected", connectControllerHandler);
 
     return () => {
@@ -252,6 +257,8 @@ function App() {
         {!controllers.length && <p>Please connect at least 1 controller</p>}
 
         <p>{messageInMorse}</p>
+
+        <button onClick={playSuccessSound}>Music</button>
       </Styled.AppRoundControls>
 
       <Styled.AppInput>
