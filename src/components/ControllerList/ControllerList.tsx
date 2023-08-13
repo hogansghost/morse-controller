@@ -20,14 +20,13 @@ export const ControllerList = ({
   return (
     <Styles.ControllerList>
       <Styles.ControllerIconList>
-        {mappedControllers.map((controller) => (
+        {mappedControllers.map((controller, index) => (
           <Styles.ControllerIconListItem key={controller.uid}>
             <GamepadIcon />
+            <p>{index + 1}</p>
           </Styles.ControllerIconListItem>
         ))}
       </Styles.ControllerIconList>
-
-      <p>{controllers.length ?? 0} controllers connected</p>
     </Styles.ControllerList>
   );
 };

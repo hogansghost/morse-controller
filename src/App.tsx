@@ -1,4 +1,11 @@
-import { ChangeEvent, FormEvent, useEffect, useRef, useState } from "react";
+import {
+  ChangeEvent,
+  FormEvent,
+  useEffect,
+  useReducer,
+  useRef,
+  useState,
+} from "react";
 import useSound from "use-sound";
 import SuccessSoundFX from "./assets/sounds/success.mp3";
 import { ControllerDisconnectedOverlay } from "./components/ControllerDisconnectedOverlay/ControllerDisconnectedOverlay";
@@ -15,7 +22,45 @@ import {
   vibrateControllerConnected,
 } from "./utils/vibrationFunctions";
 
+enum GameStateActions {
+  PAUSE_GAME = "PauseGame",
+  RESUME_GAME = "ResumeGame",
+}
+
+type GameActions =
+  | {
+      type: GameStateActions.PAUSE_GAME;
+    }
+  | {
+      type: GameStateActions.RESUME_GAME;
+    };
+
+interface GameState {
+  isPaused: boolean;
+}
+
+const gameStateReducer = (state: GameState, action: GameActions) => {
+  switch (action.type) {
+    case GameStateActions.PAUSE_GAME: {
+      return {
+        ...state,
+        isPaused: true,
+      };
+    }
+    case GameStateActions.RESUME_GAME: {
+      return {
+        ...state,
+        isPaused: false,
+      };
+    }
+  }
+};
+
 function App() {
+  const [{ isPaused }, dispatch] = useReducer(gameStateReducer, {
+    isPaused: false,
+  });
+
   const [playSuccessSound] = useSound(SuccessSoundFX);
   const _animationFrame = useRef<number | null>(0);
   const _interaction = useRef(false);
@@ -24,7 +69,7 @@ function App() {
 
   const [guessingController, setGuessingController] =
     useState<GamepadCustom | null>(null);
-  const [isPaused, setIsPaused] = useState(false);
+  const [noGuess, setNoGuess] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
   const [messageInMorse, setMessageInMorse] = useState("");
   const [message, setMessage] = useState("");
@@ -75,7 +120,7 @@ function App() {
       playSuccessSound();
 
       setIsRunning(false);
-      setIsPaused(true);
+      dispatch({ type: GameStateActions.PAUSE_GAME });
       setGuessingController(controller);
 
       gameResetLoop();
@@ -129,7 +174,7 @@ function App() {
   const playBackMorseMessage = async () => {
     const morseMap = _message.current.split("");
 
-    for (const character of morseMap) {
+    for (const [index, character] of morseMap.entries()) {
       const morseFragments = getMorseCharacterFragments({ character });
 
       if (!_running.current && !!_interaction.current) {
@@ -164,6 +209,10 @@ function App() {
       setMessageInMorse((currentMorseText) => `${currentMorseText} `);
 
       await spaceLetters();
+
+      if (index === morseMap.length - 1) {
+        setNoGuess(true);
+      }
     }
   };
 
@@ -178,12 +227,14 @@ function App() {
     _running.current = true;
 
     setIsRunning(true);
-    setIsPaused(false);
+    dispatch({ type: GameStateActions.RESUME_GAME });
     setMessageInMorse("");
   };
 
   const startGameRound = () => {
     resetGameRound();
+
+    setNoGuess(false);
 
     playBackMorseMessage();
   };
@@ -193,7 +244,7 @@ function App() {
   };
 
   const handleNextRound = () => {
-    setIsPaused(false);
+    dispatch({ type: GameStateActions.RESUME_GAME });
     setMessageInMorse("");
     setMessage("");
     _message.current = "";
@@ -207,6 +258,12 @@ function App() {
     }
 
     startGameRound();
+  };
+
+  const handleReplayMessage = () => {
+    setNoGuess(false);
+    setMessageInMorse("");
+    playBackMorseMessage();
   };
 
   const handleHighlightGuessingPlayer = () => {
@@ -272,16 +329,18 @@ function App() {
       <Styled.AppInput>
         <WordInputForm
           message={message}
-          disabled={isRunning || !controllers.length}
+          isDisabled={isRunning || !controllers.length}
+          canReplayMessage={isRunning && noGuess}
           onChange={handleOnChange}
           onSubmit={handleStartRound}
+          onReplay={handleReplayMessage}
         />
       </Styled.AppInput>
 
       {/* Overlay */}
       {isPaused && (
         <GameGuessOverlay
-          disabled={isRunning}
+          isDisabled={isRunning}
           onNextRound={handleNextRound}
           onRestartRoundClick={handleRestartRound}
           onHighlightPlayerClick={handleHighlightGuessingPlayer}

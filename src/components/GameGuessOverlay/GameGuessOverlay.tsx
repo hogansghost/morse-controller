@@ -2,12 +2,12 @@ import { Button } from "../Button/Button";
 import * as Styles from "./styles";
 
 export const GameGuessOverlay = ({
-  disabled,
+  isDisabled,
   onNextRound,
   onRestartRoundClick,
   onHighlightPlayerClick,
 }: {
-  disabled: boolean;
+  isDisabled: boolean;
   onNextRound: () => void;
   onRestartRoundClick: () => void;
   onHighlightPlayerClick: () => void;
@@ -17,14 +17,14 @@ export const GameGuessOverlay = ({
       <h1>Someone has the answer</h1>
 
       <Styles.GameGuessOverlayDialogActions>
-        <Button disabled={disabled} onClick={onRestartRoundClick}>
+        <Button disabled={isDisabled} onClick={onRestartRoundClick}>
           Incorrect Guess
         </Button>
-        <Button disabled={disabled} onClick={onNextRound}>
+        <Button disabled={isDisabled} onClick={onNextRound}>
           Correct Guess
         </Button>
 
-        <Button disabled={disabled} onClick={onHighlightPlayerClick}>
+        <Button disabled={isDisabled} onClick={onHighlightPlayerClick}>
           Highlight guessing player
         </Button>
       </Styles.GameGuessOverlayDialogActions>

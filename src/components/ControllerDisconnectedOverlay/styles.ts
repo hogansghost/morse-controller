@@ -7,7 +7,7 @@ export const ControllerDisconnectedOverlay = styled.div`
   inset-block-start: 0;
   inset-block-end: 0;
   font-size: 12px;
-  background: rgba(0, 0, 0, 0.8);
+  background-color: rgba(0, 0, 0, 0.4);
   color: white;
   padding: 16px 0;
   display: grid;
@@ -20,7 +20,7 @@ export const ControllerDisconnectedOverlay = styled.div`
 export const ControllerDisconnectedOverlayContent = styled.div`
   font-size: 12px;
   color: white;
-  background: rgb(25 25 25);
+  background-color: rgba(15, 15, 15, 0.9);
   font-size: 5em;
   text-align: center;
   padding: 100px 32px;

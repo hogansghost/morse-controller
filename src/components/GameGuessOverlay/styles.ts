@@ -13,6 +13,8 @@ export const GameGuessOverlay = styled.div`
   align-items: center;
   justify-items: center;
   padding: 32px;
+  background-color: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(5px);
 `;
 
 export const GameGuessOverlayDialog = styled.dialog`
@@ -24,6 +26,8 @@ export const GameGuessOverlayDialog = styled.dialog`
   border: 0;
   background-color: rgba(0, 0, 0, 1);
   border-radius: 16px;
+  box-shadow: 0 4px 16px -4px rgba(0, 0, 0, 0.1),
+    0 4px 32px -4px rgba(0, 0, 0, 0.2);
 `;
 
 export const GameGuessOverlayDialogActions = styled.div`

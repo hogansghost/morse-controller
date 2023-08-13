@@ -20,4 +20,6 @@ export const ControllerIconList = styled.ul`
 export const ControllerIconListItem = styled.li`
   aspect-ratio: 1 / 1;
   list-style: none;
+  text-align: center;
+  font-weight: 700;
 `;
