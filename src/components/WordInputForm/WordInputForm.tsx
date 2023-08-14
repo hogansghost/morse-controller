@@ -19,20 +19,32 @@ export const WordInputForm = ({
 }) => {
   const formRef = useRef<HTMLFormElement>(null);
   const messageInputRef = useRef<HTMLTextAreaElement>(null);
+  const replayButtonRef = useRef<HTMLButtonElement>(null);
 
   const hasNoMessage = !message.length;
   const isSubmitDisabled = hasNoMessage || isDisabled;
   const isReplayDisabled = hasNoMessage || !canReplayMessage;
 
   const handleEnterKeySubmit = (evt: any) => {
-    if (formRef.current && evt.key == "Enter") {
+    if (evt.key === "Enter") {
       evt.preventDefault();
 
-      formRef.current.dispatchEvent(
-        new Event("submit", { bubbles: true, cancelable: true })
-      );
+      if (formRef.current && !hasNoMessage) {
+        formRef.current.dispatchEvent(
+          new Event("submit", {
+            bubbles: true,
+            cancelable: true,
+          })
+        );
+      }
     }
   };
+
+  useEffect(() => {
+    if (replayButtonRef.current && !isReplayDisabled) {
+      replayButtonRef.current.focus();
+    }
+  }, [isReplayDisabled]);
 
   useEffect(() => {
     if (messageInputRef.current) {
@@ -44,7 +56,7 @@ export const WordInputForm = ({
           handleEnterKeySubmit
         );
     }
-  }, []);
+  }, [hasNoMessage]);
 
   return (
     <Styled.Form ref={formRef} onSubmit={onSubmit}>
@@ -64,7 +76,11 @@ export const WordInputForm = ({
       </Styled.FormActions>
 
       <Styled.FormActions>
-        <Button type="button" disabled={isReplayDisabled} onClick={onReplay}>
+        <Button
+          ref={replayButtonRef}
+          disabled={isReplayDisabled}
+          onClick={onReplay}
+        >
           Replay
         </Button>
       </Styled.FormActions>

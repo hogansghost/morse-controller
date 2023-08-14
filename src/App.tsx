@@ -7,72 +7,52 @@ import {
   useState,
 } from "react";
 import useSound from "use-sound";
+
 import SuccessSoundFX from "./assets/sounds/success.mp3";
+import WinSoundFX from "./assets/sounds/win.mp3";
+
 import { ControllerDisconnectedOverlay } from "./components/ControllerDisconnectedOverlay/ControllerDisconnectedOverlay";
 import { ControllerList } from "./components/ControllerList/ControllerList";
 import { GameGuessOverlay } from "./components/GameGuessOverlay/GameGuessOverlay";
 import { WordInputForm } from "./components/WordInputForm/WordInputForm";
-import * as Styled from "./styles";
+import {
+  GameStateActions,
+  gameDefaultState,
+  gameStateReducer,
+} from "./reducers/game";
 import { spaceLetters, spaceMorseFragment, spaceWord } from "./utils/delays";
 import { getMorseCharacterFragments } from "./utils/getMorseCharacterFragments";
 import { GamepadCustom, vibrateController } from "./utils/vibrateController";
+
+import * as Styled from "./styles";
+
 import {
   morseDash,
   morseDot,
   vibrateControllerConnected,
 } from "./utils/vibrationFunctions";
 
-enum GameStateActions {
-  PAUSE_GAME = "PauseGame",
-  RESUME_GAME = "ResumeGame",
-}
-
-type GameActions =
-  | {
-      type: GameStateActions.PAUSE_GAME;
-    }
-  | {
-      type: GameStateActions.RESUME_GAME;
-    };
-
-interface GameState {
-  isPaused: boolean;
-}
-
-const gameStateReducer = (state: GameState, action: GameActions) => {
-  switch (action.type) {
-    case GameStateActions.PAUSE_GAME: {
-      return {
-        ...state,
-        isPaused: true,
-      };
-    }
-    case GameStateActions.RESUME_GAME: {
-      return {
-        ...state,
-        isPaused: false,
-      };
-    }
-  }
-};
-
 function App() {
-  const [{ isPaused }, dispatch] = useReducer(gameStateReducer, {
-    isPaused: false,
-  });
+  const [
+    {
+      isRunning,
+      isPaused,
+      noPlayerGuess,
+      message,
+      messageInMorse,
+      guessingController,
+    },
+    dispatch,
+  ] = useReducer(gameStateReducer, gameDefaultState);
 
   const [playSuccessSound] = useSound(SuccessSoundFX);
+  const [playWinSound, { stop: stopWinSound }] = useSound(WinSoundFX);
+
   const _animationFrame = useRef<number | null>(0);
   const _interaction = useRef(false);
   const _running = useRef(false);
   const _message = useRef("");
 
-  const [guessingController, setGuessingController] =
-    useState<GamepadCustom | null>(null);
-  const [noGuess, setNoGuess] = useState(false);
-  const [isRunning, setIsRunning] = useState(false);
-  const [messageInMorse, setMessageInMorse] = useState("");
-  const [message, setMessage] = useState("");
   const [controllers, setControllers] = useState<GamepadCustom[]>([]);
 
   const assignConnectedControllers = () => {
@@ -94,7 +74,7 @@ function App() {
   };
 
   const disconnectControllerHandler = () => {
-    console.log("disconnected");
+    console.warn("Controllers disconnected");
     assignConnectedControllers();
   };
 
@@ -119,17 +99,18 @@ function App() {
 
       playSuccessSound();
 
-      setIsRunning(false);
-      dispatch({ type: GameStateActions.PAUSE_GAME });
-      setGuessingController(controller);
+      dispatch({
+        type: GameStateActions.GAME_STATE_PLAYER_GUESS,
+        payload: controller,
+      });
 
       gameResetLoop();
 
       vibrateController({
         controller,
-        duration: 1200,
+        duration: 1000,
         weakMagnitude: 1,
-        strongMagnitude: 1,
+        strongMagnitude: 0.8,
       });
     }
   };
@@ -164,7 +145,10 @@ function App() {
       return;
     }
 
-    setMessageInMorse((currentMorseText) => `${currentMorseText}${fragment}`);
+    dispatch({
+      type: GameStateActions.UPDATE_MORSE_MESSAGE,
+      payload: fragment,
+    });
 
     await controllerLoop(controllerEvent);
 
@@ -181,13 +165,13 @@ function App() {
         gameResetLoop();
 
         _running.current = false;
-        setIsRunning(false);
+        dispatch({ type: GameStateActions.GAME_LOOP_PAUSE });
 
         break;
       }
 
       if (character === " ") {
-        setMessageInMorse((currentMorseText) => `${currentMorseText}/ `);
+        dispatch({ type: GameStateActions.UPDATE_MORSE_MESSAGE, payload: "/" });
         await spaceWord();
         continue;
       }
@@ -206,12 +190,14 @@ function App() {
         }
       }
 
-      setMessageInMorse((currentMorseText) => `${currentMorseText} `);
+      dispatch({ type: GameStateActions.UPDATE_MORSE_MESSAGE, payload: " " });
 
       await spaceLetters();
 
       if (index === morseMap.length - 1) {
-        setNoGuess(true);
+        dispatch({
+          type: GameStateActions.GAME_STATE_PLAYER_NO_GUESS,
+        });
       }
     }
   };
@@ -226,15 +212,11 @@ function App() {
     _interaction.current = false;
     _running.current = true;
 
-    setIsRunning(true);
-    dispatch({ type: GameStateActions.RESUME_GAME });
-    setMessageInMorse("");
+    dispatch({ type: GameStateActions.GAME_ROUND_RESET });
   };
 
   const startGameRound = () => {
     resetGameRound();
-
-    setNoGuess(false);
 
     playBackMorseMessage();
   };
@@ -244,16 +226,20 @@ function App() {
   };
 
   const handleNextRound = () => {
-    dispatch({ type: GameStateActions.RESUME_GAME });
-    setMessageInMorse("");
-    setMessage("");
+    playWinSound();
+
     _message.current = "";
+
+    dispatch({ type: GameStateActions.GAME_ROUND_NEXT });
   };
 
   const handleStartRound = (evt: FormEvent<HTMLFormElement>) => {
     evt.preventDefault();
 
+    stopWinSound();
+
     if (!message.length) {
+      console.error("No message found");
       return;
     }
 
@@ -261,42 +247,21 @@ function App() {
   };
 
   const handleReplayMessage = () => {
-    setNoGuess(false);
-    setMessageInMorse("");
+    dispatch({ type: GameStateActions.GAME_GUESS_RESET });
+
     playBackMorseMessage();
   };
 
-  const handleHighlightGuessingPlayer = () => {
-    if (!guessingController) {
-      console.error("No current guesser found");
-      return;
-    }
-
-    vibrateController({
-      controller: guessingController,
-      duration: 1200,
-      weakMagnitude: 1,
-      strongMagnitude: 1,
-    });
-  };
-
   const handleOnChange = (evt: ChangeEvent<HTMLTextAreaElement>) => {
-    _message.current = evt.target.value;
-    setMessage(evt.target.value);
+    const newMessage = evt.target.value;
+
+    dispatch({
+      type: GameStateActions.UPDATE_MESSAGE,
+      payload: newMessage,
+    });
+
+    _message.current = newMessage;
   };
-
-  useEffect(() => {
-    window.addEventListener("gamepadconnected", connectControllerHandler);
-    window.addEventListener("gamepaddisconnected", disconnectControllerHandler);
-
-    return () => {
-      window.removeEventListener("gamepadconnected", connectControllerHandler);
-      window.removeEventListener(
-        "gamepaddisconnected",
-        disconnectControllerHandler
-      );
-    };
-  }, []);
 
   useEffect(() => {
     _animationFrame.current = window.requestAnimationFrame(
@@ -313,7 +278,20 @@ function App() {
       playSuccessSound();
     }
   }, [controllers]);
-  console.log(controllers);
+
+  useEffect(() => {
+    window.addEventListener("gamepadconnected", connectControllerHandler);
+    window.addEventListener("gamepaddisconnected", disconnectControllerHandler);
+
+    return () => {
+      window.removeEventListener("gamepadconnected", connectControllerHandler);
+      window.removeEventListener(
+        "gamepaddisconnected",
+        disconnectControllerHandler
+      );
+    };
+  }, []);
+
   return (
     <Styled.App>
       <Styled.AppController>
@@ -321,8 +299,6 @@ function App() {
       </Styled.AppController>
 
       <Styled.AppRoundControls>
-        {!controllers.length && <ControllerDisconnectedOverlay />}
-
         <p>{messageInMorse}</p>
       </Styled.AppRoundControls>
 
@@ -330,20 +306,22 @@ function App() {
         <WordInputForm
           message={message}
           isDisabled={isRunning || !controllers.length}
-          canReplayMessage={isRunning && noGuess}
+          canReplayMessage={isRunning && noPlayerGuess}
           onChange={handleOnChange}
           onSubmit={handleStartRound}
           onReplay={handleReplayMessage}
         />
       </Styled.AppInput>
 
-      {/* Overlay */}
+      {/* Overlays */}
+      {!controllers.length && <ControllerDisconnectedOverlay />}
+
       {isPaused && (
         <GameGuessOverlay
           isDisabled={isRunning}
+          guessingController={guessingController}
           onNextRound={handleNextRound}
           onRestartRoundClick={handleRestartRound}
-          onHighlightPlayerClick={handleHighlightGuessingPlayer}
         />
       )}
     </Styled.App>

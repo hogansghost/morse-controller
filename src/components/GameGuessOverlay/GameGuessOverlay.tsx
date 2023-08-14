@@ -1,33 +1,55 @@
+import {
+  GamepadCustom,
+  vibrateController,
+} from "../../utils/vibrateController";
+import { vibrationPlayerWin } from "../../utils/vibrationFunctions";
 import { Button } from "../Button/Button";
 import * as Styles from "./styles";
 
 export const GameGuessOverlay = ({
   isDisabled,
+  guessingController,
   onNextRound,
   onRestartRoundClick,
-  onHighlightPlayerClick,
 }: {
   isDisabled: boolean;
+  guessingController: GamepadCustom | null;
   onNextRound: () => void;
   onRestartRoundClick: () => void;
-  onHighlightPlayerClick: () => void;
-}) => (
-  <Styles.GameGuessOverlay>
-    <Styles.GameGuessOverlayDialog>
-      <h1>Someone has the answer</h1>
+}) => {
+  const handleHighlightGuesser = () =>
+    vibrateController({
+      controller: guessingController,
+      duration: 800,
+      weakMagnitude: 1,
+      strongMagnitude: 0.8,
+    });
 
-      <Styles.GameGuessOverlayDialogActions>
-        <Button disabled={isDisabled} onClick={onRestartRoundClick}>
-          Incorrect Guess
-        </Button>
-        <Button disabled={isDisabled} onClick={onNextRound}>
-          Correct Guess
-        </Button>
+  const handleCorrectGuess = () => {
+    vibrationPlayerWin({ controller: guessingController });
 
-        <Button disabled={isDisabled} onClick={onHighlightPlayerClick}>
-          Highlight guessing player
-        </Button>
-      </Styles.GameGuessOverlayDialogActions>
-    </Styles.GameGuessOverlayDialog>
-  </Styles.GameGuessOverlay>
-);
+    onNextRound();
+  };
+
+  return (
+    <Styles.GameGuessOverlay>
+      <Styles.GameGuessOverlayDialog>
+        <h1>Someone has the answer!</h1>
+
+        <Styles.GameGuessOverlayDialogActions>
+          <Button disabled={isDisabled} onClick={onRestartRoundClick}>
+            Incorrect Guess
+          </Button>
+
+          <Button disabled={isDisabled} onClick={handleCorrectGuess}>
+            Correct Guess
+          </Button>
+
+          <Button disabled={isDisabled} onClick={handleHighlightGuesser}>
+            Highlight guessing player
+          </Button>
+        </Styles.GameGuessOverlayDialogActions>
+      </Styles.GameGuessOverlayDialog>
+    </Styles.GameGuessOverlay>
+  );
+};

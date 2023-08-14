@@ -6,6 +6,7 @@ export const getMorseCharacterFragments = ({
   character: string;
 }): MorseFragments[] => {
   switch (character.toLocaleLowerCase()) {
+    // LETTERS
     case "a":
       return [".", "-"];
 
@@ -84,6 +85,7 @@ export const getMorseCharacterFragments = ({
     case "z":
       return ["-", "-", ".", "."];
 
+    // NUMBERS
     case "0":
       return ["-", "-", "-", "-", "-"];
 
@@ -113,6 +115,41 @@ export const getMorseCharacterFragments = ({
 
     case "9":
       return ["-", "-", "-", "-", "."];
+
+    // PUNCTUATION
+    case ",":
+      return ["-", "-", ".", ".", "-", "-"];
+    case ".":
+      return [".", "-", ".", "-", ".", "-"];
+    case "?":
+      return [".", ".", "-", "-", ".", "."];
+    case ";":
+      return ["-", ".", "-", ".", "-", "."];
+    case ":":
+    case "÷":
+      return ["-", "-", "-", ".", ".", "."];
+    case "/":
+      return ["-", ".", ".", "-", "."];
+    case "-":
+      return ["-", ".", ".", ".", ".", "-"];
+    case "'":
+      return [".", "-", "-", "-", "-", "."];
+    case '"':
+      return [".", "-", ".", ".", "-", "."];
+    case "_":
+      return [".", ".", "-", "-", ".", "-"];
+    case "(":
+      return ["-", ".", "-", "-", "."];
+    case ")":
+      return ["-", ".", "-", "-", ".", "-"];
+    case "=":
+      return ["-", ".", ".", ".", "-"];
+    case "+":
+      return [".", "-", ".", "-", "."];
+    case "*":
+      return ["-", ".", ".", "-"];
+    case "@":
+      return [".", "-", "-", ".", "-", "."];
 
     default:
       return [];

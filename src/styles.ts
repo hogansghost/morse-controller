@@ -32,10 +32,16 @@ export const AppController = styled.div`
 export const AppRoundControls = styled.div`
   display: grid;
   grid-template-columns: minmax(0, 1fr);
+  align-items: center;
   gap: 16px;
   padding: 16px;
   font-size: 2em;
   text-align: center;
+
+  > p {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+  }
 `;
 
 export const AppInput = styled.div`
