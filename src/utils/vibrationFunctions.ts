@@ -1,4 +1,5 @@
-import { GamepadCustom, vibrateController } from "./vibrateController";
+import { GamepadCustom } from "../types/gamepad.types";
+import { vibrateController } from "./vibrateController";
 
 export type MorseEvent = { controller: GamepadCustom | null };
 

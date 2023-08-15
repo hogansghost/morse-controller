@@ -1,7 +1,5 @@
-import {
-  GamepadCustom,
-  vibrateController,
-} from "../../utils/vibrateController";
+import { GamepadCustom } from "../../types/gamepad.types";
+import { vibrateController } from "../../utils/vibrateController";
 import { vibrationPlayerWin } from "../../utils/vibrationFunctions";
 import { Button } from "../Button/Button";
 import * as Styles from "./styles";

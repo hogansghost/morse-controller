@@ -1,5 +1,6 @@
 import { useMemo } from "react";
-import { GamepadCustom } from "../../utils/vibrateController";
+
+import { GamepadCustom } from "../../types/gamepad.types";
 import { GamepadIcon } from "../icons/ControllerIcon/ControllerIcon";
 import * as Styles from "./styles";
 

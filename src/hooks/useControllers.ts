@@ -1,4 +1,9 @@
 import { useEffect, useRef } from "react";
+import { GamepadCustom, GamepadEventCustom } from "../types/gamepad.types";
+
+interface GamepadRef {
+  [key: number]: GamepadCustom;
+}
 
 export default function useGamepads(callback: (data: GamepadRef) => void) {
   const gamepads = useRef<GamepadRef>([]);
@@ -6,7 +11,7 @@ export default function useGamepads(callback: (data: GamepadRef) => void) {
 
   var haveEvents = "ongamepadconnected" in window;
 
-  const addGamepad = (gamepad: Gamepad) => {
+  const addGamepad = (gamepad: GamepadCustom) => {
     gamepads.current = {
       ...gamepads.current,
       [gamepad.index]: gamepad,
@@ -25,7 +30,7 @@ export default function useGamepads(callback: (data: GamepadRef) => void) {
    * @param {object} e
    */
   const connectGamepadHandler = (e: Event) => {
-    addGamepad((e as GamepadEvent).gamepad);
+    addGamepad((e as GamepadEventCustom).gamepad);
   };
 
   /**
@@ -35,14 +40,19 @@ export default function useGamepads(callback: (data: GamepadRef) => void) {
     // Grab gamepads from browser API
     var detectedGamepads = navigator.getGamepads
       ? navigator.getGamepads()
-      : navigator.webkitGetGamepads
-      ? navigator.webkitGetGamepads()
+      : // @ts-expect-error browser support
+      navigator.webkitGetGamepads
+      ? // @ts-expect-error browser support
+        navigator.webkitGetGamepads()
       : [];
 
     // Loop through all detected controllers and add if not already in state
     for (var i = 0; i < detectedGamepads.length; i++) {
       const newGamepads = detectedGamepads[i];
-      if (newGamepads && newGamepads !== null) addGamepad(newGamepads);
+
+      if (newGamepads && newGamepads !== null) {
+        addGamepad(newGamepads);
+      }
     }
   };
 

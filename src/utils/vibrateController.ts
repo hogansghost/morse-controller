@@ -1,9 +1,4 @@
-// TS GamepadHapticActuator is missing the non-standard vibrationActuator
-// https://developer.mozilla.org/en-US/docs/Web/API/Gamepad/vibrationActuator
-export type GamepadCustom = Gamepad & {
-  type: GamepadHapticActuator["type"] | "dual-rumble";
-  vibrationActuator: any;
-};
+import { GamepadCustom } from "../types/gamepad.types";
 
 export const vibrateController = ({
   controller,

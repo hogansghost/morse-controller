@@ -1,4 +1,4 @@
-import { GamepadCustom } from "../utils/vibrateController";
+import { GamepadCustom } from "../../types/gamepad.types";
 
 export interface GameState {
   isRunning: boolean;

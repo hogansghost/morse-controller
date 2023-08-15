@@ -22,10 +22,11 @@ import {
 } from "./reducers/game";
 import { spaceLetters, spaceMorseFragment, spaceWord } from "./utils/delays";
 import { getMorseCharacterFragments } from "./utils/getMorseCharacterFragments";
-import { GamepadCustom, vibrateController } from "./utils/vibrateController";
+import { vibrateController } from "./utils/vibrateController";
 
 import * as Styled from "./styles";
 
+import { GamepadCustom } from "./types/gamepad.types";
 import {
   morseDash,
   morseDot,
