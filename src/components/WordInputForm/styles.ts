@@ -2,11 +2,25 @@ import styled from "styled-components";
 import { Button } from "../Button/styles";
 
 export const Form = styled.form`
-  display: flex;
-  grid-template-columns: minmax(0, 1fr) min-content;
+  display: grid;
+  flex-wrap: wrap;
+  grid-template-columns: minmax(0, 1fr);
   gap: 32px;
   padding: 32px 64px;
-  height: 200px;
+  min-height: 200px;
+
+  @media screen and (max-width: 767px) {
+    grid-template-rows: 160px 90px 90px;
+  }
+
+  @media screen and (min-width: 768px) and (max-width: 1023px) {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: 220px 120px;
+  }
+
+  @media screen and (min-width: 1024px) {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 136px 136px;
+  }
 
   textarea {
     min-height: 0;
@@ -42,21 +56,15 @@ export const Form = styled.form`
 `;
 
 export const FormInputs = styled.div`
-  flex: 1 1 auto;
-  min-width: 0;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
+
+  @media screen and (min-width: 768px) {
+    grid-column: span 2;
+  }
 `;
 
 export const FormActions = styled.div`
-  flex: 0 0 auto;
-  aspect-ratio: 1 / 1;
   display: grid;
-  grid-template-columns: 0px minmax(0, 1fr);
-
-  &::before {
-    content: "";
-    display: block;
-    padding-bottom: 100%;
-  }
+  grid-template-columns: minmax(0, 1fr);
 `;

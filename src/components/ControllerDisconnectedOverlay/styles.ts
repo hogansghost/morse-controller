@@ -12,6 +12,7 @@ export const ControllerDisconnectedOverlay = styled.div`
   padding: 16px 0;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
   align-items: center;
   backdrop-filter: blur(5px);
   z-index: 10;
@@ -25,4 +26,6 @@ export const ControllerDisconnectedOverlayContent = styled.div`
   text-align: center;
   padding: 100px 32px;
   box-shadow: 0 0 100px -20px black, 0 0 60px -10px black;
+  overflow: auto;
+  max-height: 100%;
 `;

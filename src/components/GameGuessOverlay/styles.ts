@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import { Button } from "../Button/styles";
 
 export const GameGuessOverlay = styled.div`
   position: fixed;
@@ -34,4 +35,8 @@ export const GameGuessOverlayDialogActions = styled.div`
   display: flex;
   gap: 16px;
   flex-wrap: wrap;
+
+  ${Button} {
+    flex: 1 1 auto;
+  }
 `;
