@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import { Button } from "../Button/styles";
 
-export const GameGuessOverlay = styled.div`
+export const GameInstructionsOverlay = styled.div`
   position: fixed;
   inset-inline-start: 0;
   inset-block-start: 0;
@@ -18,14 +18,14 @@ export const GameGuessOverlay = styled.div`
   backdrop-filter: blur(5px);
 `;
 
-export const GameGuessOverlayDialog = styled.dialog`
+export const GameInstructionsOverlayDialog = styled.dialog`
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   padding: 32px;
   gap: 32px;
   margin: auto;
   border: 0;
-  width: 1000px;
+  width: 800px;
   max-width: 100%;
   background-color: rgba(0, 0, 0, 1);
   border-radius: 16px;
@@ -33,7 +33,7 @@ export const GameGuessOverlayDialog = styled.dialog`
     0 4px 32px -4px rgba(0, 0, 0, 0.2);
 `;
 
-export const GameGuessOverlayDialogActions = styled.div`
+export const GameInstructionsOverlayDialogActions = styled.div`
   display: flex;
   gap: 16px;
   flex-wrap: wrap;

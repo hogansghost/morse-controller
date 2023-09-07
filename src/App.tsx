@@ -11,9 +11,9 @@ import useSound from "use-sound";
 import SuccessSoundFX from "./assets/sounds/success.mp3";
 import WinSoundFX from "./assets/sounds/win.mp3";
 
-import { ControllerDisconnectedOverlay } from "./components/ControllerDisconnectedOverlay/ControllerDisconnectedOverlay";
 import { ControllerList } from "./components/ControllerList/ControllerList";
 import { GameGuessOverlay } from "./components/GameGuessOverlay/GameGuessOverlay";
+import { GameInstructionsOverlay } from "./components/GameInstructionsOverlay/GameInstructionsOverlay";
 import { WordInputForm } from "./components/WordInputForm/WordInputForm";
 import {
   GameStateActions,
@@ -55,6 +55,16 @@ function App() {
   const _message = useRef("");
 
   const [controllers, setControllers] = useState<GamepadCustom[]>([]);
+  const [isInstructionOverlayOpen, setIsInstructionOverlayOpen] =
+    useState(false);
+
+  const handleCloseInstructionsOverlay = () => {
+    setIsInstructionOverlayOpen(false);
+  };
+
+  const handleOpenInstructionsOverlay = () => {
+    setIsInstructionOverlayOpen(true);
+  };
 
   const assignConnectedControllers = () => {
     const detectedGamepads = (navigator?.getGamepads().filter(Boolean) ??
@@ -297,6 +307,35 @@ function App() {
     <Styled.App>
       <Styled.AppController>
         <ControllerList controllers={controllers} />
+
+        {/**
+         *
+         * TODO: make an icon button component.
+         * TODO: make a dialog component (accessibilty, use a lib?).
+         * TODO: Port all overlays to Dialog component.
+         * TODO: make a help icon component.
+         * TODO: Improve instructions.
+         * TODO: Research best practise for svg icons - inline is bloat.
+         * TODO: Research partykit to make this online coop.
+         */}
+
+        <button
+          style={{ padding: "8px", border: 0, borderRadius: "50%" }}
+          aria-label="Game instructions"
+          type="button"
+          onClick={handleOpenInstructionsOverlay}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 91.999 92"
+            style={{ height: "1em", width: "1em" }}
+          >
+            <path
+              fill="currentColor"
+              d="M45.385.004C19.982.344-.334 21.215.004 46.619c.34 25.393 21.209 45.715 46.611 45.377 25.398-.342 45.718-21.213 45.38-46.615-.34-25.395-21.21-45.716-46.61-45.377zM45.249 74l-.254-.004c-3.912-.116-6.67-2.998-6.559-6.852.109-3.788 2.934-6.538 6.717-6.538l.227.004c4.021.119 6.748 2.972 6.635 6.937C51.903 71.346 49.122 74 45.249 74zm16.455-32.659c-.92 1.307-2.943 2.93-5.492 4.916l-2.807 1.938c-1.541 1.198-2.471 2.325-2.82 3.434-.275.873-.41 1.104-.434 2.88l-.004.451H39.429l.031-.907c.131-3.728.223-5.921 1.768-7.733 2.424-2.846 7.771-6.289 7.998-6.435.766-.577 1.412-1.234 1.893-1.936 1.125-1.551 1.623-2.772 1.623-3.972a7.74 7.74 0 0 0-1.471-4.576c-.939-1.323-2.723-1.993-5.303-1.993-2.559 0-4.311.812-5.359 2.478-1.078 1.713-1.623 3.512-1.623 5.35v.457H27.935l.02-.477c.285-6.769 2.701-11.643 7.178-14.487C37.946 18.918 41.446 18 45.53 18c5.346 0 9.859 1.299 13.412 3.861 3.6 2.596 5.426 6.484 5.426 11.556 0 2.837-.896 5.502-2.664 7.924z"
+            />
+          </svg>
+        </button>
       </Styled.AppController>
 
       <Styled.AppRoundControls>
@@ -315,7 +354,11 @@ function App() {
       </Styled.AppInput>
 
       {/* Overlays */}
-      {!controllers.length && <ControllerDisconnectedOverlay />}
+      {/* {!controllers.length && <ControllerDisconnectedOverlay />} */}
+
+      {isInstructionOverlayOpen && (
+        <GameInstructionsOverlay onClose={handleCloseInstructionsOverlay} />
+      )}
 
       {isPaused && (
         <GameGuessOverlay

@@ -16,9 +16,13 @@ export const App = styled.div`
 `;
 
 export const AppController = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   position: sticky;
   inset-block-start: 0;
   inset-inline-start: 0;
+  padding-inline-end: 16px;
   background-color: rgba(0, 0, 0, 0.2);
   background: linear-gradient(
     180deg,
