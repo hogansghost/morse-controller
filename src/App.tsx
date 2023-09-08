@@ -6,7 +6,6 @@ import WinSoundFX from './assets/sounds/win.mp3';
 
 import { ControllerList } from './components/ControllerList/ControllerList';
 import { GameGuessOverlay } from './components/GameGuessOverlay/GameGuessOverlay';
-import { GameInstructionsOverlay } from './components/GameInstructionsOverlay/GameInstructionsOverlay';
 import { WordInputForm } from './components/WordInputForm/WordInputForm';
 import { GameStateActions, gameDefaultState, gameStateReducer } from './reducers/game';
 import { spaceLetters, spaceMorseFragment, spaceWord } from './utils/delays';
@@ -15,6 +14,9 @@ import { vibrateController } from './utils/vibrateController';
 
 import * as Styled from './styles';
 
+import { ControllerDisconnectedOverlay } from './components/ControllerDisconnectedOverlay/ControllerDisconnectedOverlay';
+import { useDialog } from './components/Dialog/hooks/useDialog';
+import { GameInstructionsOverlay } from './components/GameInstructionsOverlay/GameInstructionsOverlay';
 import { GamepadCustom } from './types/gamepad.types';
 import { morseDash, morseDot, vibrateControllerConnected } from './utils/vibrationFunctions';
 
@@ -33,15 +35,7 @@ function App() {
   const _message = useRef('');
 
   const [controllers, setControllers] = useState<GamepadCustom[]>([]);
-  const [isInstructionOverlayOpen, setIsInstructionOverlayOpen] = useState(false);
-
-  const handleCloseInstructionsOverlay = () => {
-    setIsInstructionOverlayOpen(false);
-  };
-
-  const handleOpenInstructionsOverlay = () => {
-    setIsInstructionOverlayOpen(true);
-  };
+  const [isInstructionOverlayOpen, handleOpenInstructionsOverlay, handleCloseInstructionsOverlay] = useDialog();
 
   const assignConnectedControllers = () => {
     const detectedGamepads = (navigator?.getGamepads().filter(Boolean) ?? []) as NonNullable<GamepadCustom>[];
@@ -306,9 +300,9 @@ function App() {
       </Styled.AppInput>
 
       {/* Overlays */}
-      {/* {!controllers.length && <ControllerDisconnectedOverlay />} */}
+      {!controllers.length && <ControllerDisconnectedOverlay />}
 
-      {isInstructionOverlayOpen && <GameInstructionsOverlay onClose={handleCloseInstructionsOverlay} />}
+      <GameInstructionsOverlay isOpen={isInstructionOverlayOpen} onDismiss={handleCloseInstructionsOverlay} />
 
       {isPaused && (
         <GameGuessOverlay
