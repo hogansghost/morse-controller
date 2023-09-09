@@ -14,9 +14,8 @@ import { vibrateController } from './utils/vibrateController';
 
 import * as Styled from './styles';
 
-import { ControllerDisconnectedOverlay } from './components/ControllerDisconnectedOverlay/ControllerDisconnectedOverlay';
 import { useDialog } from './components/Dialog/hooks/useDialog';
-import { GameInstructionsOverlay } from './components/GameInstructionsOverlay/GameInstructionsOverlay';
+import { GameInstructionsDialog } from './components/GameInstructionsDialog/GameInstructionsDialog';
 import { GamepadCustom } from './types/gamepad.types';
 import { morseDash, morseDot, vibrateControllerConnected } from './utils/vibrationFunctions';
 
@@ -35,7 +34,12 @@ function App() {
   const _message = useRef('');
 
   const [controllers, setControllers] = useState<GamepadCustom[]>([]);
-  const [isInstructionOverlayOpen, handleOpenInstructionsOverlay, handleCloseInstructionsOverlay] = useDialog();
+  const [
+    instructionDialogRef,
+    isInstructionDialoglayOpen,
+    handleOpenInstructionsOverlay,
+    handleCloseInstructionsDialog,
+  ] = useDialog();
 
   const assignConnectedControllers = () => {
     const detectedGamepads = (navigator?.getGamepads().filter(Boolean) ?? []) as NonNullable<GamepadCustom>[];
@@ -300,9 +304,13 @@ function App() {
       </Styled.AppInput>
 
       {/* Overlays */}
-      {!controllers.length && <ControllerDisconnectedOverlay />}
+      {/* {!controllers.length && <ControllerDisconnectedOverlay />} */}
 
-      <GameInstructionsOverlay isOpen={isInstructionOverlayOpen} onDismiss={handleCloseInstructionsOverlay} />
+      <GameInstructionsDialog
+        ref={instructionDialogRef}
+        isOpen={isInstructionDialoglayOpen}
+        onDismiss={handleCloseInstructionsDialog}
+      />
 
       {isPaused && (
         <GameGuessOverlay

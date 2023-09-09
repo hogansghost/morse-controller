@@ -1,4 +1,4 @@
-import { ButtonHTMLAttributes, DetailedHTMLProps, ForwardedRef, ReactNode, forwardRef, useEffect, useRef } from 'react';
+import { DetailedHTMLProps, DialogHTMLAttributes, ForwardedRef, ReactNode, forwardRef } from 'react';
 import { createPortal } from 'react-dom';
 import styled, { css } from 'styled-components';
 
@@ -42,12 +42,16 @@ const StyledDialogContent = styled.div`
   row-gap: 32px;
 `;
 
+const StyledDialogHeader = styled.div`
+  display: flex;
+`;
+
 export type DialogCommonProps = {
   isOpen: boolean;
   onDismiss: () => void;
 };
 
-type DialogProps = DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement> &
+type DialogProps = DetailedHTMLProps<DialogHTMLAttributes<HTMLDialogElement>, HTMLDialogElement> &
   DialogCommonProps & {
     children: ReactNode;
     title?: string;
@@ -55,45 +59,49 @@ type DialogProps = DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HT
     disableEscClose?: boolean;
   };
 
-export const DialogWrapper = forwardRef<HTMLButtonElement, DialogProps>(
+export const DialogWrapper = forwardRef<HTMLDialogElement, DialogProps>(
   (
-    { children, isOpen, disableEscClose = true, size = 'small', title, onDismiss, role = 'button', ...props },
-    ref?: ForwardedRef<HTMLButtonElement>
+    { children, isOpen, disableEscClose = false, size = 'small', title, onDismiss, role = 'button', ...props },
+    ref?: ForwardedRef<HTMLDialogElement>
   ) => {
-    const dialogRef = useRef<HTMLDialogElement>(null);
+    // const dialogRef = useRef<HTMLDialogElement>(null);
 
     const handleOnKeydownDismiss = (evt: KeyboardEvent) => {
-      if (evt.key === 'Escape') {
+      if (evt.key === 'Escape' && !disableEscClose) {
         evt.preventDefault();
-
-        if (!disableEscClose) {
-          onDismiss();
-        }
       }
     };
 
-    useEffect(() => {
-      if (isOpen) {
-        return dialogRef.current?.showModal();
-      }
+    const handleCloseEvent = () => {
+      onDismiss();
+    };
 
-      dialogRef.current?.close();
-    }, [isOpen, dialogRef.current]);
+    // useEffect(() => {
+    //   if (isOpen) {
+    //     return dialogRef.current?.showModal();
+    //   }
 
-    useEffect(() => {
-      window.addEventListener('keydown', handleOnKeydownDismiss);
+    //   dialogRef.current?.close();
+    // }, [isOpen, dialogRef.current]);
 
-      return () => window.removeEventListener('keydown', handleOnKeydownDismiss);
-    }, []);
+    // useEffect(() => {
+    //   window.addEventListener('keydown', handleOnKeydownDismiss);
+    //   dialogRef.current?.addEventListener('close', handleCloseEvent);
+
+    //   return () => {
+    //     window.removeEventListener('keydown', handleOnKeydownDismiss);
+    //     dialogRef.current?.removeEventListener('close', handleCloseEvent);
+    //   };
+    // }, []);
 
     return createPortal(
-      <StyledDialog ref={dialogRef} $size={size}>
+      <StyledDialog ref={ref} $size={size}>
         <StyledDialogContent>
-          <div>
+          <StyledDialogHeader>
             {title && <h1>{title}</h1>}
 
             <button onClick={onDismiss}>X</button>
-          </div>
+          </StyledDialogHeader>
 
           {children}
         </StyledDialogContent>
