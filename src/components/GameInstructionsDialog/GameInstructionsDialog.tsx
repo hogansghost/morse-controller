@@ -1,6 +1,8 @@
 import { ForwardedRef, forwardRef } from 'react';
 import { Button } from '../Button/Button';
-import { Dialog, DialogCommonProps } from '../Dialog/Dialog';
+import { ButtonGroup } from '../ButtonGroup';
+import { Dialog } from '../Dialog/Dialog';
+import { DialogCommonProps } from '../Dialog/Dialog.types';
 
 export const GameInstructionsDialog = forwardRef<HTMLDialogElement, DialogCommonProps>(
   ({ isOpen, onDismiss }, ref?: ForwardedRef<HTMLDialogElement>) => (
@@ -25,7 +27,9 @@ export const GameInstructionsDialog = forwardRef<HTMLDialogElement, DialogCommon
       </Dialog.Body>
 
       <Dialog.Footer>
-        <Button onClick={onDismiss}>Close instructions</Button>
+        <ButtonGroup>
+          <Button onClick={onDismiss}>Close instructions</Button>
+        </ButtonGroup>
       </Dialog.Footer>
     </Dialog>
   )
