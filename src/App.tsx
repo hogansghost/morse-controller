@@ -1,50 +1,32 @@
-import {
-  ChangeEvent,
-  FormEvent,
-  useEffect,
-  useReducer,
-  useRef,
-  useState,
-} from "react";
-import useSound from "use-sound";
+import { ChangeEvent, FormEvent, useEffect, useReducer, useRef, useState } from 'react';
+import useSound from 'use-sound';
 
-import SuccessSoundFX from "./assets/sounds/success.mp3";
-import WinSoundFX from "./assets/sounds/win.mp3";
+import SuccessSoundFX from './assets/sounds/success.mp3';
+import WinSoundFX from './assets/sounds/win.mp3';
 
-import { ControllerDisconnectedOverlay } from "./components/ControllerDisconnectedOverlay/ControllerDisconnectedOverlay";
-import { ControllerList } from "./components/ControllerList/ControllerList";
-import { GameGuessOverlay } from "./components/GameGuessOverlay/GameGuessOverlay";
-import { WordInputForm } from "./components/WordInputForm/WordInputForm";
-import {
-  GameStateActions,
-  gameDefaultState,
-  gameStateReducer,
-} from "./reducers/game";
-import { spaceLetters, spaceMorseFragment, spaceWord } from "./utils/delays";
-import { getMorseCharacterFragments } from "./utils/getMorseCharacterFragments";
-import { vibrateController } from "./utils/vibrateController";
+import { ControllerList } from './components/ControllerList/ControllerList';
+import { GameGuessDialog } from './components/GameGuessDialog/GameGuessDialog';
+import { WordInputForm } from './components/WordInputForm/WordInputForm';
+import { GameStateActions, gameDefaultState, gameStateReducer } from './reducers/game';
+import { spaceLetters, spaceMorseFragment, spaceWord } from './utils/delays';
+import { getMorseCharacterFragments } from './utils/getMorseCharacterFragments';
+import { vibrateController } from './utils/vibrateController';
 
-import * as Styled from "./styles";
+import * as Styled from './styles';
 
-import { GamepadCustom } from "./types/gamepad.types";
-import {
-  morseDash,
-  morseDot,
-  vibrateControllerConnected,
-} from "./utils/vibrationFunctions";
+import { ControllerDisconnectedOverlay } from './components/ControllerDisconnectedOverlay/ControllerDisconnectedOverlay';
+import { useDialog } from './components/Dialog/hooks/useDialog';
+import { GameInstructionsDialog } from './components/GameInstructionsDialog/GameInstructionsDialog';
+import { IconButton } from './components/IconButton';
+import { HelpIcon } from './components/icons/HelpIcon/HelpIcon';
+import { GamepadCustom } from './types/gamepad.types';
+import { morseDash, morseDot, vibrateControllerConnected } from './utils/vibrationFunctions';
 
 function App() {
-  const [
-    {
-      isRunning,
-      isPaused,
-      noPlayerGuess,
-      message,
-      messageInMorse,
-      guessingController,
-    },
-    dispatch,
-  ] = useReducer(gameStateReducer, gameDefaultState);
+  const [{ isRunning, isPaused, noPlayerGuess, message, messageInMorse, guessingController }, dispatch] = useReducer(
+    gameStateReducer,
+    gameDefaultState
+  );
 
   const [playSuccessSound] = useSound(SuccessSoundFX);
   const [playWinSound, { stop: stopWinSound }] = useSound(WinSoundFX);
@@ -52,13 +34,19 @@ function App() {
   const _animationFrame = useRef<number | null>(0);
   const _interaction = useRef(false);
   const _running = useRef(false);
-  const _message = useRef("");
+  const _guessingController = useRef<GamepadCustom | null>(null);
+  const _message = useRef('');
 
   const [controllers, setControllers] = useState<GamepadCustom[]>([]);
+  const [
+    instructionDialogRef,
+    isInstructionDialoglayOpen,
+    handleOpenInstructionsDialog,
+    handleCloseInstructionsDialog,
+  ] = useDialog();
 
   const assignConnectedControllers = () => {
-    const detectedGamepads = (navigator?.getGamepads().filter(Boolean) ??
-      []) as NonNullable<GamepadCustom>[];
+    const detectedGamepads = (navigator?.getGamepads().filter(Boolean) ?? []) as NonNullable<GamepadCustom>[];
     const detectedGamepadCount = !!detectedGamepads.length;
 
     setControllers(detectedGamepads);
@@ -75,7 +63,7 @@ function App() {
   };
 
   const disconnectControllerHandler = () => {
-    console.warn("Controllers disconnected");
+    console.warn('Controllers disconnected');
     assignConnectedControllers();
   };
 
@@ -87,16 +75,13 @@ function App() {
     _animationFrame.current = null;
   };
 
-  const controllerInteraction = async ({
-    controller,
-  }: {
-    controller: GamepadCustom;
-  }) => {
+  const controllerInteraction = async ({ controller }: { controller: GamepadCustom }) => {
     const buttons = controller?.buttons?.some((button) => button.pressed);
 
     if (!!buttons && _running.current) {
       _interaction.current = true;
       _running.current = false;
+      _guessingController.current = controller;
 
       playSuccessSound();
 
@@ -119,14 +104,11 @@ function App() {
   const gameRequestAnimationLoop = async () => {
     await controllerLoop(controllerInteraction);
 
-    _animationFrame.current = window.requestAnimationFrame(
-      gameRequestAnimationLoop
-    );
+    _animationFrame.current = window.requestAnimationFrame(gameRequestAnimationLoop);
   };
 
   const controllerLoop = async (controllerCallback: any) => {
-    const detectedGamepads = (navigator?.getGamepads().filter(Boolean) ??
-      []) as NonNullable<GamepadCustom>[];
+    const detectedGamepads = (navigator?.getGamepads().filter(Boolean) ?? []) as NonNullable<GamepadCustom>[];
 
     await Promise.all(
       detectedGamepads.map(async (controller: GamepadCustom) => {
@@ -135,13 +117,7 @@ function App() {
     );
   };
 
-  const morseFragmentLoop = async ({
-    fragment,
-    controllerEvent,
-  }: {
-    fragment: string;
-    controllerEvent: any;
-  }) => {
+  const morseFragmentLoop = async ({ fragment, controllerEvent }: { fragment: string; controllerEvent: any }) => {
     if (!_running.current && !!_interaction.current) {
       return;
     }
@@ -157,7 +133,7 @@ function App() {
   };
 
   const playBackMorseMessage = async () => {
-    const morseMap = _message.current.split("");
+    const morseMap = _message.current.split('');
 
     for (const [index, character] of morseMap.entries()) {
       const morseFragments = getMorseCharacterFragments({ character });
@@ -171,8 +147,8 @@ function App() {
         break;
       }
 
-      if (character === " ") {
-        dispatch({ type: GameStateActions.UPDATE_MORSE_MESSAGE, payload: "/" });
+      if (character === ' ') {
+        dispatch({ type: GameStateActions.UPDATE_MORSE_MESSAGE, payload: '/' });
         await spaceWord();
         continue;
       }
@@ -182,20 +158,20 @@ function App() {
           break;
         }
 
-        if (fragment === "-") {
+        if (fragment === '-') {
           await morseFragmentLoop({ fragment, controllerEvent: morseDash });
         }
 
-        if (fragment === ".") {
+        if (fragment === '.') {
           await morseFragmentLoop({ fragment, controllerEvent: morseDot });
         }
       }
 
-      dispatch({ type: GameStateActions.UPDATE_MORSE_MESSAGE, payload: " " });
+      dispatch({ type: GameStateActions.UPDATE_MORSE_MESSAGE, payload: ' ' });
 
       await spaceLetters();
 
-      if (index === morseMap.length - 1) {
+      if (!_guessingController.current && index === morseMap.length - 1) {
         dispatch({
           type: GameStateActions.GAME_STATE_PLAYER_NO_GUESS,
         });
@@ -205,9 +181,7 @@ function App() {
 
   const resetGameRound = () => {
     if (!_animationFrame.current) {
-      _animationFrame.current = window.requestAnimationFrame(
-        gameRequestAnimationLoop
-      );
+      _animationFrame.current = window.requestAnimationFrame(gameRequestAnimationLoop);
     }
 
     _interaction.current = false;
@@ -223,13 +197,15 @@ function App() {
   };
 
   const handleRestartRound = () => {
+    _guessingController.current = null;
+
     startGameRound();
   };
 
   const handleNextRound = () => {
     playWinSound();
 
-    _message.current = "";
+    _message.current = '';
 
     dispatch({ type: GameStateActions.GAME_ROUND_NEXT });
   };
@@ -240,7 +216,7 @@ function App() {
     stopWinSound();
 
     if (!message.length) {
-      console.error("No message found");
+      console.error('No message found');
       return;
     }
 
@@ -265,9 +241,7 @@ function App() {
   };
 
   useEffect(() => {
-    _animationFrame.current = window.requestAnimationFrame(
-      gameRequestAnimationLoop
-    );
+    _animationFrame.current = window.requestAnimationFrame(gameRequestAnimationLoop);
 
     return () => {
       gameResetLoop();
@@ -281,15 +255,12 @@ function App() {
   }, [controllers]);
 
   useEffect(() => {
-    window.addEventListener("gamepadconnected", connectControllerHandler);
-    window.addEventListener("gamepaddisconnected", disconnectControllerHandler);
+    window.addEventListener('gamepadconnected', connectControllerHandler);
+    window.addEventListener('gamepaddisconnected', disconnectControllerHandler);
 
     return () => {
-      window.removeEventListener("gamepadconnected", connectControllerHandler);
-      window.removeEventListener(
-        "gamepaddisconnected",
-        disconnectControllerHandler
-      );
+      window.removeEventListener('gamepadconnected', connectControllerHandler);
+      window.removeEventListener('gamepaddisconnected', disconnectControllerHandler);
     };
   }, []);
 
@@ -297,6 +268,17 @@ function App() {
     <Styled.App>
       <Styled.AppController>
         <ControllerList controllers={controllers} />
+
+        {/**
+         *
+         * TODO: Improve instructions.
+         * TODO: Research best practise for svg icons - inline is bloat.
+         * TODO: Research partykit to make this online coop.
+         */}
+
+        <IconButton aria-label="Game instructions" onClick={handleOpenInstructionsDialog}>
+          <HelpIcon />
+        </IconButton>
       </Styled.AppController>
 
       <Styled.AppRoundControls>
@@ -307,7 +289,7 @@ function App() {
         <WordInputForm
           message={message}
           isDisabled={isRunning || !controllers.length}
-          canReplayMessage={isRunning && noPlayerGuess}
+          canReplayMessage={noPlayerGuess}
           onChange={handleOnChange}
           onSubmit={handleStartRound}
           onReplay={handleReplayMessage}
@@ -315,16 +297,21 @@ function App() {
       </Styled.AppInput>
 
       {/* Overlays */}
-      {!controllers.length && <ControllerDisconnectedOverlay />}
+      <ControllerDisconnectedOverlay isOpen={!controllers.length} />
 
-      {isPaused && (
-        <GameGuessOverlay
-          isDisabled={isRunning}
-          guessingController={guessingController}
-          onNextRound={handleNextRound}
-          onRestartRoundClick={handleRestartRound}
-        />
-      )}
+      <GameInstructionsDialog
+        ref={instructionDialogRef}
+        isOpen={isInstructionDialoglayOpen}
+        onDismiss={handleCloseInstructionsDialog}
+      />
+
+      <GameGuessDialog
+        isOpen={isPaused}
+        isDisabled={isRunning}
+        guessingController={guessingController}
+        onNextRound={handleNextRound}
+        onRestartRoundClick={handleRestartRound}
+      />
     </Styled.App>
   );
 }

@@ -1,6 +1,6 @@
-import { ChangeEvent, FormEvent, useEffect, useRef } from "react";
-import { Button } from "../Button/Button";
-import * as Styled from "./styles";
+import { ChangeEvent, FormEvent, useEffect, useRef } from 'react';
+import { Button } from '../Button/Button';
+import * as Styled from './styles';
 
 export const WordInputForm = ({
   message,
@@ -26,12 +26,12 @@ export const WordInputForm = ({
   const isReplayDisabled = hasNoMessage || !canReplayMessage;
 
   const handleEnterKeySubmit = (evt: any) => {
-    if (evt.key === "Enter") {
+    if (evt.key === 'Enter') {
       evt.preventDefault();
 
       if (formRef.current && !hasNoMessage) {
         formRef.current.dispatchEvent(
-          new Event("submit", {
+          new Event('submit', {
             bubbles: true,
             cancelable: true,
           })
@@ -47,26 +47,25 @@ export const WordInputForm = ({
   }, [isReplayDisabled]);
 
   useEffect(() => {
-    if (messageInputRef.current) {
-      messageInputRef.current.addEventListener("keydown", handleEnterKeySubmit);
+    if (replayButtonRef.current) {
+      replayButtonRef.current.focus();
+    }
+  }, []);
 
-      return () =>
-        messageInputRef.current?.removeEventListener(
-          "keydown",
-          handleEnterKeySubmit
-        );
+  useEffect(() => {
+    if (messageInputRef.current) {
+      messageInputRef.current.addEventListener('keydown', handleEnterKeySubmit);
+
+      return () => {
+        messageInputRef.current?.removeEventListener('keydown', handleEnterKeySubmit);
+      };
     }
   }, [hasNoMessage]);
 
   return (
     <Styled.Form ref={formRef} onSubmit={onSubmit}>
       <Styled.FormInputs>
-        <textarea
-          ref={messageInputRef}
-          disabled={isDisabled}
-          value={message}
-          onChange={onChange}
-        />
+        <textarea ref={messageInputRef} disabled={isDisabled} value={message} onChange={onChange} autoFocus />
       </Styled.FormInputs>
 
       <Styled.FormActions>
@@ -76,11 +75,7 @@ export const WordInputForm = ({
       </Styled.FormActions>
 
       <Styled.FormActions>
-        <Button
-          ref={replayButtonRef}
-          disabled={isReplayDisabled}
-          onClick={onReplay}
-        >
+        <Button ref={replayButtonRef} disabled={isReplayDisabled} onClick={onReplay}>
           Replay
         </Button>
       </Styled.FormActions>

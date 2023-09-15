@@ -1,5 +1,5 @@
-import { useEffect, useRef } from "react";
-import { GamepadCustom, GamepadEventCustom } from "../types/gamepad.types";
+import { useEffect, useRef } from 'react';
+import { GamepadCustom, GamepadEventCustom } from '../types/gamepad.types';
 
 interface GamepadRef {
   [key: number]: GamepadCustom;
@@ -9,7 +9,7 @@ export default function useGamepads(callback: (data: GamepadRef) => void) {
   const gamepads = useRef<GamepadRef>([]);
   const requestRef = useRef<number>();
 
-  var haveEvents = "ongamepadconnected" in window;
+  var haveEvents = 'ongamepadconnected' in window;
 
   const addGamepad = (gamepad: GamepadCustom) => {
     gamepads.current = {
@@ -58,12 +58,11 @@ export default function useGamepads(callback: (data: GamepadRef) => void) {
 
   // Add event listener for gamepad connecting
   useEffect(() => {
-    window.addEventListener("gamepadconnected", connectGamepadHandler);
+    window.addEventListener('gamepadconnected', connectGamepadHandler);
 
-    return window.removeEventListener(
-      "gamepadconnected",
-      connectGamepadHandler
-    );
+    return () => {
+      window.removeEventListener('gamepadconnected', connectGamepadHandler);
+    };
   });
 
   // Update each gamepad's status on each "tick"
@@ -74,7 +73,10 @@ export default function useGamepads(callback: (data: GamepadRef) => void) {
 
   useEffect(() => {
     requestRef.current = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(requestRef.current!);
+
+    return () => {
+      cancelAnimationFrame(requestRef.current!);
+    };
   });
 
   return gamepads.current;

@@ -1,5 +1,5 @@
-import { GameActions, GameStateActions } from "./game.actions";
-import { GameState } from "./game.state";
+import { GameActions, GameStateActions } from './game.actions';
+import { GameState } from './game.state';
 
 export const gameStateReducer = (state: GameState, action: GameActions) => {
   switch (action.type) {
@@ -47,8 +47,8 @@ export const gameStateReducer = (state: GameState, action: GameActions) => {
       return {
         ...state,
         isPaused: false,
-        message: "",
-        messageInMorse: "",
+        message: '',
+        messageInMorse: '',
       };
     }
     case GameStateActions.GAME_ROUND_RESET: {
@@ -56,15 +56,16 @@ export const gameStateReducer = (state: GameState, action: GameActions) => {
         ...state,
         isRunning: true,
         isPaused: false,
+        guessingController: null,
         noPlayerGuess: false,
-        messageInMorse: "",
+        messageInMorse: '',
       };
     }
     case GameStateActions.GAME_GUESS_RESET: {
       return {
         ...state,
         noPlayerGuess: false,
-        messageInMorse: "",
+        messageInMorse: '',
       };
     }
     case GameStateActions.UPDATE_MESSAGE: {

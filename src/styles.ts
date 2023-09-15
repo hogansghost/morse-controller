@@ -1,5 +1,5 @@
-import styled from "styled-components";
-import { getGameTheme } from "./utils/getGameTheme";
+import styled from 'styled-components';
+import { getGameTheme } from './utils/getGameTheme';
 
 const { color, backgroundImage } = getGameTheme();
 
@@ -16,9 +16,13 @@ export const App = styled.div`
 `;
 
 export const AppController = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   position: sticky;
   inset-block-start: 0;
   inset-inline-start: 0;
+  padding-inline-end: 16px;
   background-color: rgba(0, 0, 0, 0.2);
   background: linear-gradient(
     180deg,
@@ -39,7 +43,7 @@ export const AppRoundControls = styled.div`
   text-align: center;
 
   > p {
-    background-color: rgba(0, 0, 0, 0.2);
+    background-color: rgba(0, 0, 0, 0.5);
     border-radius: 4px;
   }
 `;
@@ -49,10 +53,5 @@ export const AppInput = styled.div`
   inset-block-end: 0;
   inset-inline-start: 0;
   padding-block-start: 60px;
-  background: linear-gradient(
-    0deg,
-    rgba(3, 2, 23, 1) 0%,
-    rgba(5, 3, 38, 1) 35%,
-    rgba(0, 212, 255, 0) 100%
-  );
+  background: linear-gradient(0deg, rgba(3, 2, 23, 1) 0%, rgba(5, 3, 38, 1) 35%, rgba(0, 212, 255, 0) 100%);
 `;

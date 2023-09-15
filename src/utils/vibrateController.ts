@@ -1,4 +1,4 @@
-import { GamepadCustom } from "../types/gamepad.types";
+import { GamepadCustom } from '../types/gamepad.types';
 
 export const vibrateController = ({
   controller,
@@ -14,17 +14,14 @@ export const vibrateController = ({
   strongMagnitude: number;
 }) => {
   if (!controller) {
-    console.error("Controller not found.");
+    console.error('Controller not found.');
     return;
   }
 
-  return controller.vibrationActuator?.playEffect(
-    controller.vibrationActuator?.type ?? "dual-rumble",
-    {
-      startDelay,
-      duration,
-      weakMagnitude,
-      strongMagnitude,
-    }
-  );
+  return controller.vibrationActuator?.playEffect(controller.vibrationActuator?.type ?? 'dual-rumble', {
+    startDelay,
+    duration,
+    weakMagnitude,
+    strongMagnitude,
+  });
 };
