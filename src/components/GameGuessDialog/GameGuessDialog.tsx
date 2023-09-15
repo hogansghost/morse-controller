@@ -1,11 +1,11 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { GamepadCustom } from '../../types/gamepad.types';
 import { vibrateController } from '../../utils/vibrateController';
 import { vibrationPlayerWin } from '../../utils/vibrationFunctions';
 import { Button } from '../Button';
-import { ButtonGroup } from '../ButtonGroup';
 import { Dialog } from '../Dialog/Dialog';
 import { useDialog } from '../Dialog/hooks/useDialog';
+import { StyledButtonGroup } from './styles';
 
 export const GameGuessDialog = ({
   isOpen,
@@ -20,6 +20,8 @@ export const GameGuessDialog = ({
   onNextRound: () => void;
   onRestartRoundClick: () => void;
 }) => {
+  const correctGuessButtonRef = useRef(null);
+
   const [guessDialogRef, guessDialogIsOpen, handleGuessDialogOpen, handleGuessDialogClose] = useDialog();
 
   const handleHighlightGuesser = () =>
@@ -48,29 +50,30 @@ export const GameGuessDialog = ({
   return (
     <Dialog
       ref={guessDialogRef}
-      isOpen={guessDialogIsOpen}
-      size="medium"
-      disableEscClose
       title="Someone has the answer!"
+      size="medium"
+      focusElement={correctGuessButtonRef}
+      isOpen={guessDialogIsOpen}
+      disableEscClose
     >
       <Dialog.Body>
         <p>You can check which player buzzed in my pressing the "highlight guessing player" button below.</p>
       </Dialog.Body>
 
       <Dialog.Footer>
-        <ButtonGroup>
+        <StyledButtonGroup>
           <Button disabled={isDisabled} onClick={onRestartRoundClick}>
             Incorrect Guess
           </Button>
 
-          <Button disabled={isDisabled} onClick={handleCorrectGuess}>
+          <Button ref={correctGuessButtonRef} disabled={isDisabled} onClick={handleCorrectGuess}>
             Correct Guess
           </Button>
 
           <Button disabled={isDisabled} onClick={handleHighlightGuesser}>
             Highlight guessing player
           </Button>
-        </ButtonGroup>
+        </StyledButtonGroup>
       </Dialog.Footer>
     </Dialog>
   );

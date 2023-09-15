@@ -14,6 +14,7 @@ import { vibrateController } from './utils/vibrateController';
 
 import * as Styled from './styles';
 
+import { ControllerDisconnectedOverlay } from './components/ControllerDisconnectedOverlay/ControllerDisconnectedOverlay';
 import { useDialog } from './components/Dialog/hooks/useDialog';
 import { GameInstructionsDialog } from './components/GameInstructionsDialog/GameInstructionsDialog';
 import { IconButton } from './components/IconButton';
@@ -33,13 +34,14 @@ function App() {
   const _animationFrame = useRef<number | null>(0);
   const _interaction = useRef(false);
   const _running = useRef(false);
+  const _guessingController = useRef<GamepadCustom | null>(null);
   const _message = useRef('');
 
   const [controllers, setControllers] = useState<GamepadCustom[]>([]);
   const [
     instructionDialogRef,
     isInstructionDialoglayOpen,
-    handleOpenInstructionsOverlay,
+    handleOpenInstructionsDialog,
     handleCloseInstructionsDialog,
   ] = useDialog();
 
@@ -79,6 +81,7 @@ function App() {
     if (!!buttons && _running.current) {
       _interaction.current = true;
       _running.current = false;
+      _guessingController.current = controller;
 
       playSuccessSound();
 
@@ -168,7 +171,7 @@ function App() {
 
       await spaceLetters();
 
-      if (index === morseMap.length - 1) {
+      if (!_guessingController.current && index === morseMap.length - 1) {
         dispatch({
           type: GameStateActions.GAME_STATE_PLAYER_NO_GUESS,
         });
@@ -194,6 +197,8 @@ function App() {
   };
 
   const handleRestartRound = () => {
+    _guessingController.current = null;
+
     startGameRound();
   };
 
@@ -266,16 +271,12 @@ function App() {
 
         {/**
          *
-         * TODO: make an icon button component.
-         * TODO: make a dialog component (accessibilty, use a lib?).
-         * TODO: Port all overlays to Dialog component.
-         * TODO: make a help icon component.
          * TODO: Improve instructions.
          * TODO: Research best practise for svg icons - inline is bloat.
          * TODO: Research partykit to make this online coop.
          */}
 
-        <IconButton aria-label="Game instructions" onClick={handleOpenInstructionsOverlay}>
+        <IconButton aria-label="Game instructions" onClick={handleOpenInstructionsDialog}>
           <HelpIcon />
         </IconButton>
       </Styled.AppController>
@@ -288,7 +289,7 @@ function App() {
         <WordInputForm
           message={message}
           isDisabled={isRunning || !controllers.length}
-          canReplayMessage={isRunning && noPlayerGuess}
+          canReplayMessage={noPlayerGuess}
           onChange={handleOnChange}
           onSubmit={handleStartRound}
           onReplay={handleReplayMessage}
@@ -296,7 +297,7 @@ function App() {
       </Styled.AppInput>
 
       {/* Overlays */}
-      {/* {!controllers.length && <ControllerDisconnectedOverlay />} */}
+      <ControllerDisconnectedOverlay isOpen={!controllers.length} />
 
       <GameInstructionsDialog
         ref={instructionDialogRef}

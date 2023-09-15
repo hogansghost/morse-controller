@@ -9,6 +9,7 @@ export type DialogProps = DetailedHTMLProps<DialogHTMLAttributes<HTMLDialogEleme
   DialogCommonProps & {
     children: ReactNode;
     title?: string;
-    size?: 'small' | 'medium';
+    size?: 'small' | 'medium' | 'large' | 'fullWidth';
     disableEscClose?: boolean;
+    focusElement?: any;
   };

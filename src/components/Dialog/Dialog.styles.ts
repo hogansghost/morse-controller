@@ -26,11 +26,30 @@ export const StyledDialog = styled.dialog<{ $size: any }>`
       width: 800px;
     `}
 
-  &::backdrop {
+    ${$size === 'large' &&
+    css`
+      width: 1000px;
+    `}
+
+    ${$size === 'fullWidth' &&
+    css`
+      width: 100%;
+      border-radius: 0;
+    `}
+
+    &:focus {
+      outline: 0;
+    }
+
+    &::backdrop {
       background-color: rgba(0, 0, 0, 0.4);
       backdrop-filter: blur(5px);
     }
   `}
+`;
+
+export const StyledDialogTitle = styled.h1`
+  font-size: 2rem;
 `;
 
 export const StyledDialogContent = styled.div`
@@ -42,4 +61,6 @@ export const StyledDialogContent = styled.div`
 
 export const StyledDialogHeader = styled.div`
   display: flex;
+  align-items: center;
+  justify-content: space-between;
 `;

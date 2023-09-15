@@ -5,7 +5,7 @@ export const ButtonGroup = styled.div`
   display: flex;
   gap: 16px;
   flex-wrap: wrap;
-  align-items: flex-end;
+  justify-content: flex-end;
 
   ${Button} {
     flex: 0 1 auto;
