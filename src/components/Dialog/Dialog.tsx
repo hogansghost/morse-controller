@@ -50,7 +50,7 @@ export const DialogComponent = forwardRef<HTMLDialogElement, DialogProps>(
         <StyledDialogContent>
           {(title || onDismiss) && (
             <StyledDialogHeader>
-              {title && <StyledDialogTitle>{title} lol</StyledDialogTitle>}
+              {title && <StyledDialogTitle>{title}</StyledDialogTitle>}
 
               {onDismiss && (
                 <IconButton aria-label="Close dialog" onClick={onDismiss}>
