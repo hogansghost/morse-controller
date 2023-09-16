@@ -40,7 +40,6 @@ export const gameStateReducer = (state: GameState, action: GameActions) => {
       return {
         ...state,
         noPlayerGuess: true,
-        guessingController: null,
       };
     }
     case GameStateActions.GAME_ROUND_NEXT: {
