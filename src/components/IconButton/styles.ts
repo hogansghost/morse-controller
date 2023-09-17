@@ -13,6 +13,9 @@ export const IconButton = styled.button<{ $size: 'small' | 'medium' | 'large' }>
     padding: 6px;
     border: 0;
     background: none;
+    appearance: none;
+    color: #fff;
+    user-select: none;
 
     ${$size === 'small' &&
     css`

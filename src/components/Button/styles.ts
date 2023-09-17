@@ -5,4 +5,7 @@ export const Button = styled.button`
   text-align: center;
   padding: 8px 16px;
   border-radius: 6px;
+  color: #fff;
+  appearance: none;
+  user-select: none;
 `;

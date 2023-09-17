@@ -11,6 +11,7 @@ export const StyledDialog = styled.dialog<{ $size: any }>`
     max-width: 100%;
     max-height: 90vh;
     padding: 32px;
+    color: #fff;
     background-color: rgba(0, 0, 0, 1);
     border: 0;
     border-radius: 16px;

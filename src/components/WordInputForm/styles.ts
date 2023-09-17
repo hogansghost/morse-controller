@@ -1,5 +1,5 @@
-import styled from "styled-components";
-import { Button } from "../Button/styles";
+import styled from 'styled-components';
+import { Button } from '../Button/styles';
 
 export const Form = styled.form`
   display: grid;
@@ -24,6 +24,7 @@ export const Form = styled.form`
 
   textarea {
     min-height: 0;
+    appearance: none;
   }
 
   input,
@@ -33,7 +34,7 @@ export const Form = styled.form`
     background-color: var(--interface-colour);
 
     &::before {
-      content: "";
+      content: '';
       position: absolute;
       display: block;
       border-radius: 8px;
