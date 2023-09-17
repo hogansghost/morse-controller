@@ -1,7 +1,4 @@
 import styled from 'styled-components';
-import { getGameTheme } from './utils/getGameTheme';
-
-const { color, backgroundImage } = getGameTheme();
 
 export const App = styled.div`
   display: grid;
@@ -10,9 +7,7 @@ export const App = styled.div`
   min-height: 100vh;
   background-size: cover;
   background-position: center;
-  background-image: ${backgroundImage};
-
-  --interface-colour: ${color};
+  background-image: var(--interface-background-image);
 `;
 
 export const AppController = styled.div`

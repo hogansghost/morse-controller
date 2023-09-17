@@ -1,6 +1,6 @@
 import { ChangeEvent, FormEvent, useEffect, useRef } from 'react';
 import { Button } from '../Button/Button';
-import * as Styled from './styles';
+import * as Styled from './WordInputForm.styles';
 
 export const WordInputForm = ({
   message,
@@ -63,22 +63,26 @@ export const WordInputForm = ({
   }, [hasNoMessage]);
 
   return (
-    <Styled.Form ref={formRef} onSubmit={onSubmit}>
-      <Styled.FormInputs>
-        <textarea ref={messageInputRef} disabled={isDisabled} value={message} onChange={onChange} autoFocus />
-      </Styled.FormInputs>
+    <Styled.WordInputFormWrapper>
+      {isDisabled && <p>To play, at least one controller must be connected.</p>}
 
-      <Styled.FormActions>
-        <Button type="submit" disabled={isSubmitDisabled}>
-          Play
-        </Button>
-      </Styled.FormActions>
+      <Styled.Form ref={formRef} onSubmit={onSubmit}>
+        <Styled.FormInputs>
+          <textarea ref={messageInputRef} disabled={isDisabled} value={message} onChange={onChange} autoFocus />
+        </Styled.FormInputs>
 
-      <Styled.FormActions>
-        <Button ref={replayButtonRef} disabled={isReplayDisabled} onClick={onReplay}>
-          Replay
-        </Button>
-      </Styled.FormActions>
-    </Styled.Form>
+        <Styled.FormActions>
+          <Button type="submit" disabled={isSubmitDisabled}>
+            Play
+          </Button>
+        </Styled.FormActions>
+
+        <Styled.FormActions>
+          <Button ref={replayButtonRef} disabled={isReplayDisabled} onClick={onReplay}>
+            Replay
+          </Button>
+        </Styled.FormActions>
+      </Styled.Form>
+    </Styled.WordInputFormWrapper>
   );
 };
