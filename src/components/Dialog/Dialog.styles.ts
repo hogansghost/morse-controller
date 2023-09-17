@@ -48,10 +48,6 @@ export const StyledDialog = styled.dialog<{ $size: any }>`
   `}
 `;
 
-export const StyledDialogTitle = styled.h1`
-  font-size: 2rem;
-`;
-
 export const StyledDialogContent = styled.div`
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -62,5 +58,11 @@ export const StyledDialogContent = styled.div`
 export const StyledDialogHeader = styled.div`
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
+`;
+
+export const StyledDialogTitle = styled.h1`
+  font-size: 2rem;
+  flex: 1 1 auto;
+  min-width: 0;
 `;

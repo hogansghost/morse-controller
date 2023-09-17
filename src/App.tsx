@@ -14,7 +14,7 @@ import { vibrateController } from './utils/vibrateController';
 
 import * as Styled from './styles';
 
-import { ControllerDisconnectedOverlay } from './components/ControllerDisconnectedOverlay/ControllerDisconnectedOverlay';
+import { ControllerDisconnectedDialog } from './components/ControllerDisconnectedDialog/ControllerDisconnectedDialog';
 import { useDialog } from './components/Dialog/hooks/useDialog';
 import { GameInstructionsDialog } from './components/GameInstructionsDialog/GameInstructionsDialog';
 import { IconButton } from './components/IconButton';
@@ -297,7 +297,7 @@ function App() {
       </Styled.AppInput>
 
       {/* Overlays */}
-      <ControllerDisconnectedOverlay isOpen={!controllers.length} />
+      <ControllerDisconnectedDialog isOpen={!controllers.length} />
 
       <GameInstructionsDialog
         ref={instructionDialogRef}
